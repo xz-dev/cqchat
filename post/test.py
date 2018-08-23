@@ -1,10 +1,12 @@
-from io import StringIO
-import sys
-import server
-#  import logging
+import multiprocessing as mp
+import time
 
-#logging.basicConfig(level=logging.INFO)
-old_stdout = sys.stdout
-sys.stdout = resp_stdout = StringIO
-server.run()
-sys.stdout = old_stdout
+import postServer
+if __name__ == '__main__':
+    manager = mp.Manager()
+    POST_data = manager.list()
+    post_server = mp.Process(target=postServer.run, args=(POST_data,))
+    post_server.start()
+    while True:
+        print(POST_data)
+        time.sleep(2)

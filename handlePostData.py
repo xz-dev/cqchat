@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QTimer
+import multiprocessing as mp
 import os
 import shutil
 import time
@@ -11,13 +12,13 @@ import datetime
 
 
 class ShowImage(QWidget):
-    def __init__(self, imagePath):
+    def __init__(self, image_path):
         super().__init__()
-        self.imagePath = imagePath
+        self.image_path = image_path
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.autoClose)
         self.timer.start(100)
-        self.title = 'PyQt5 image - pythonspot.com'
+        self.title = 'QrCode'
         self.left = 10
         self.top = 10
         self.width = 640
@@ -30,59 +31,41 @@ class ShowImage(QWidget):
 
         # Create widget
         label = QLabel(self)
-        pixmap = QPixmap(self.imagePath)
+        pixmap = QPixmap(self.image_path)
         label.setPixmap(pixmap)
         self.resize(pixmap.width(), pixmap.height())
 
         self.show()
 
     def autoClose(self):
-        if not os.path.exists(self.imagePath):
+        if not os.path.exists(self.image_path):
             self.close()
 
 
-def showQrcode(path):
+def showQrcode(image_path):
     app = QApplication(sys.argv)
-    ex = ShowImage(path)
+    ex = ShowImage(image_path)
     sys.exit(app.exec_())
 
 
-def scanFolder(start_time, path):
-    file_list = os.listdir(path)
-    useful_file_list = list()
-    for tmp_file in file_list:
-        tmp_time = datetime.datetime.strptime(tmp_file, '%Y-%m-%d %H:%M:%S.%f')
-        if tmp_time >= start_time:
-            tmp_file = path + tmp_file
-            useful_file_list.append(tmp_file)
-        else:
-            time.sleep(0.2)
-    return useful_file_list
+def findQrcode(post_json):
+    if post_json['event'] == 'input_qrcode':
+        return post_json['params'][0]
+    elif post_json['params'] == ['loading', 'scaning']:
+        return True
+    else:
+        return False
 
 
-def isStart(path, start_time):
-    while True:
-        while not os.path.exists(path):
-            time.sleep(0.5)
-        file_list = os.listdir(path)
-        if len(file_list):
-            useful_file_list = scanFolder(start_time, path)
-            for tmp_file in useful_file_list:
-                with open(tmp_file, 'r') as f:
-                    load_dict = json.load(f)
-                    if load_dict['event'] == 'input_qrcode':
-                        qrcode_path = load_dict['params'][0]  # 获得二维码
-            #  useful_file_list = scanFolder(start_time, path)
-            #  for tmp_file in useful_file_list:
-            #      with open(tmp_file, 'r') as f:
-            #          load_dict = json.load(f)
-            #          if load_dict['event'] == 'state_change' and load_dict['params'] == ['loading', 'scaning']:
-                        if os.path.exists(qrcode_path):
-                            show_qrcode = threading.Thread(
-                                target=showQrcode, args=(qrcode_path,))
-                            show_qrcode.start()
-                            show_qrcode.join()
-                            return True
+def isStart(post_data_list):
+    pool = mp.Pool()
+    res = []
+    while len(res) != 1:
+        while not res.count(True):
+            res = pool.map(findQrcode, post_data_list)
+        res = [i for i in res if type(i) is str]
+    print(post_data_list)
+    showQrcode(res[0])
 
 
 def handleFriendMessage(message_dict, path, bak_path):
@@ -128,7 +111,8 @@ def handleFriendMessage(message_dict, path, bak_path):
 
 def processGetFriendMessage(send_message_dict, path, bak_path):
     while True:
-        send_message_dict = handleFriendMessage(send_message_dict, path, bak_path)
+        send_message_dict = handleFriendMessage(
+            send_message_dict, path, bak_path)
         print(send_message_dict)
         time.sleep(5)
         #  print(message_dict)
