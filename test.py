@@ -2,6 +2,12 @@ import handlePostData
 import multiprocessing as mp
 import time
 
+def aaa(tmp_dict):
+    while True:
+        print("------")
+        print(tmp_dict)
+        time.sleep(1)
+
 def job(q, path):
     messageDict = dict()
     while True:

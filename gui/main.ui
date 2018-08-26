@@ -11,38 +11,46 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>WebQQ-Python</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>3</x>
-      <y>3</y>
-      <width>1203</width>
+      <x>5</x>
+      <y>4</y>
+      <width>1205</width>
       <height>763</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QTreeWidget" name="peopleList">
-       <property name="minimumSize">
-        <size>
-         <width>261</width>
-         <height>761</height>
-        </size>
-       </property>
-       <column>
-        <property name="text">
-         <string notr="true">昵称</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>ID</string>
-        </property>
-       </column>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QTreeWidget" name="friendTree">
+         <property name="minimumSize">
+          <size>
+           <width>261</width>
+           <height>451</height>
+          </size>
+         </property>
+         <column>
+          <property name="text">
+           <string>好友</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTreeWidget" name="groupTree">
+         <column>
+          <property name="text">
+           <string>群组</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">

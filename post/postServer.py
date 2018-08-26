@@ -23,8 +23,8 @@ class S(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         # 获取POST json并写入post_data_list
         post_json = json.loads(post_data.decode('utf-8'))
+        print(post_json)
         post_data_list.append(post_json)
-        print(post_data)
         self._set_response()
         self.wfile.write("POST request for {}".format(
             self.path).encode('utf-8'))
