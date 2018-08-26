@@ -1,47 +1,7 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel
-from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import QTimer
 import multiprocessing as mp
 import os
 import time
-
-
-class ShowImage(QWidget):
-    def __init__(self, image_path):
-        super().__init__()
-        self.image_path = image_path
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.autoClose)
-        self.timer.start(100)
-        self.title = 'QrCode'
-        self.left = 10
-        self.top = 10
-        self.width = 640
-        self.height = 480
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
-
-        # Create widget
-        label = QLabel(self)
-        pixmap = QPixmap(self.image_path)
-        label.setPixmap(pixmap)
-        self.resize(pixmap.width(), pixmap.height())
-
-        self.show()
-
-    def autoClose(self):
-        if not os.path.exists(self.image_path):
-            self.close()
-
-
-def showQrcode(image_path):
-    app = QApplication(sys.argv)
-    ex = ShowImage(image_path)
-    sys.exit(app.exec_())
+import Ui
 
 
 def findQrcode(post_json):
@@ -61,29 +21,63 @@ def isStart(post_data_list):
             res = pool.map(findQrcode, post_data_list)
         res = [i for i in res if type(i) is str]
     post_data_list[:] = []
-    showQrcode(res[0])
+    Ui.showQrcode(res[0])
     return True
 
 
-def findFriendMessage(post_json):
-    if post_json['post_type'] == 'receive_message' and post_json['class'] == 'recv' and post_json['type'] == 'friend_message':
-        # 获取好友发送的消息
-        message_id = post_json['id']
-        friend_id = post_json['sender_id']  # 发送id 即好友id
-        sender_name = post_json['sender']
-        message_time = post_json['time']
-        message_content = post_json['content']
-        single_message_list = (friend_id, (message_id, message_time, sender_name, message_content))
-    elif post_json['post_type'] == 'send_message' and post_json['class'] == 'send' and post_json['type'] == 'friend_message':
-        message_id = post_json['id']
-        friend_id = post_json['receiver_id']  # 接收id 即好友id
-        sender_name = post_json['sender'] + "(me)"
-        message_time = post_json['time']
-        message_content = post_json['content']
-        single_message_list = (friend_id, (message_id, message_time, sender_name, message_content))
+def handleMessageContent(message_unit_time, sender_name, message_content):
+    message_time = time.strftime(
+        "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
+    message = message_time + '|' + \
+        "{:<{x}}".format(sender_name, x=20) + message_content
+    return message
+
+
+def findMessage(post_json):
+    if post_json['post_type'] != 'event':
+        message_id = 0
+        message_unit_time = 0
+        sender_id = 0
+        if post_json['post_type'] == 'receive_message' and post_json['class'] == 'recv':
+            # 接收消息
+            if post_json['type'] == 'friend_message':
+                # 获取好友发送的消息
+                message_id = post_json['id']
+                sender_id = post_json['sender_id']  # 发送id 即好友id
+                sender_name = post_json['sender']
+                message_unit_time = post_json['time']
+                message_content = post_json['content']
+            elif post_json['type'] == 'group_message':
+                # 获取群组发送的消息
+                message_id = post_json['id']
+                group_id = post_json['group_id']  # 群组id
+                sender_id = post_json['sender_id']  # 发言群员id
+                sender_name = post_json['sender']
+                message_unit_time = post_json['time']
+                message_content = post_json['content']
+        elif post_json['post_type'] == 'send_message' and post_json['class'] == 'send':
+            if post_json['type'] == 'friend_message':
+                # 自己发给好友的消息
+                message_id = post_json['id']
+                friend_id = post_json['receiver_id']  # 接收id 即好友id
+                sender_name = post_json['sender'] + "(me)"
+                sender_id = post_json['receiver_id']  # 隐藏自己的id
+                message_unit_time = post_json['time']
+                message_content = post_json['content']
+        message = handleMessageContent(message_unit_time=message_unit_time,
+                                       sender_name=sender_name,
+                                       message_content=message_content)
+        single_message_dict = {'message_id': message_id,
+                               'local_unix_time': post_json['local_unix_time'],
+                               # 用于判断消息先后
+                               'message_unit_time': message_unit_time,
+                               'message_content': message,
+                               'sender_id': sender_id,
+                               }
+
     else:
-        single_message_list = False
-    return single_message_list
+        single_message_dict = None
+    return single_message_dict
 
 
 def removeRecordedManssage(message_id, post_data_list):
@@ -92,36 +86,59 @@ def removeRecordedManssage(message_id, post_data_list):
             post_data_list.remove(post_json)
 
 
-def getFriendMessage(post_data_list, friend_message_dict):
+def getMessage(post_data_list, message_dict):
     """
     提取所有有关好友的消息
     (包括接收与发送)
     并整合为dict
-    {id:[(message_time, sender_name, message_content)], ...}
+    friend_message_dict[chat_object_id] = [{
+        'message_id': message_id,
+        'message_unit_time': message_unit_time,
+        'message_content': message,
+        'sender_id': sender_id,
+        }, ...]
+    #  {id:[(message_time, sender_name, message_content)], ...}
     """
     pool = mp.Pool()
-    #  tmp_friend_message_dict = dict()
     while True:
         if len(post_data_list):
-            message_list = pool.map(findFriendMessage, post_data_list)
-            message_list = [i for i in message_list if i not in [False, None]]
-            if len(message_list):
-                for tmp_list in message_list:
-                    sender_id = tmp_list[0]
-                    message = tmp_list[1]
-                    message_id = tmp_list[1][0]
-                    removeRecordedManssage(message_id, post_data_list)
-                    if sender_id in friend_message_dict.keys():
-                        item = friend_message_dict[sender_id]
-                        item.append(message)
-                        friend_message_dict[sender_id] = item
+            message_dict_list = pool.map(findMessage, post_data_list)
+            message_dict_list = [i for i in message_dict_list if i != None]
+            if len(message_dict_list):
+                for single_message_dict in message_dict_list:
+                    removeRecordedManssage(single_message_dict['message_id'],
+                                           post_data_list)
+                    sender_id = single_message_dict['sender_id']
+                    if sender_id in message_dict:
+                        tmp_list = message_dict[sender_id]
+                        # 确保列表顺序按时间顺序
+                        message_dict_last_message_unit_time = tmp_list[-1]['message_unit_time']
+                        message_unit_time = single_message_dict['message_unit_time']
+                        if message_dict_last_message_unit_time <= message_unit_time:
+                            tmp_list.append(single_message_dict)
+                        else:
+                            tmp_list.insert(-1, single_message_dict)
+                        message_dict[sender_id] = tmp_list
                     else:
-                        item = friend_message_dict[sender_id] = list()
-                        item.append(message)
-                        friend_message_dict[sender_id] = item
-                # 因无法直接操作friend_message_dict
-                # 采用以下解决方案
-                # https://stackoverflow.com/questions/35202278/cannot-append-items-to-multiprocessing-shared-list
+                        tmp_list = [single_message_dict]
+                        message_dict[sender_id] = tmp_list
+                    # 因无法直接操作friend_message_dict
+                    # 采用以下解决方案
+                    # https://stackoverflow.com/questions/35202278/cannot-append-items-to-multiprocessing-shared-list
+
+                #  for tmp_list in message_list:
+                #      sender_id = tmp_list[0]
+                #      message = tmp_list[1]
+                #      message_id = tmp_list[1][0]
+                #      removeRecordedManssage(message_id, post_data_list)
+                #      if sender_id in friend_message_dict.keys():
+                #          item = friend_message_dict[sender_id]
+                #          item.append(message)
+                #          friend_message_dict[sender_id] = item
+                #      else:
+                #          item = friend_message_dict[sender_id] = list()
+                #          item.append(message)
+                #          friend_message_dict[sender_id] = item
             else:
                 time.sleep(0.2)
         else:

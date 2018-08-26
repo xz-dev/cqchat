@@ -1,30 +1,31 @@
 import sys
 import time
 import os
-import multiprocessing as mp
+from PyQt5.QtWidgets import QApplication, QWidget
+#  from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import QtGui, QtWidgets, QtCore
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget, QLabel
 from gui import MainGui
 
-import message
+import sendMessage
 from get import getInfo
 from post import postServer
 
 
 class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
-    def __init__(self, friend_message_dict):
+    def __init__(self, all_message_dict):
         # Explaining super is out of the scope of this article
         # So please google it if you're not familar with it
         # Simple reason why we use it here is that it allows us to
         # access variables, methods etc in the design.py file
         super().__init__()
-        self.friend_message_dict = friend_message_dict
+        self.all_message_dict = all_message_dict
+        self.loaded_message_info_dict = dict()
         self.friendTree_widget_dict = dict()
         self.groupTree_widget_dict = dict()
-        self.displayed_message_list = tuple()
+        self.chat_object_id = 0
         self.friend_info_list = list()
         self.group_info_list = list()
-        # message_last_id_list = (firend_id, [message_id, message_id, ...])
         self.sendId = None
         self.setupUi(self)
         self.loadFriendTree()  # 绘出好友列表
@@ -34,13 +35,16 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         #  newPeople.setText("HI")
         #  self.friendTree.insertItem(4, newPeople)
         self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.loadMessageList)
-        self.timer.start(100)  # 每0.2秒刷新一次消息列表
-        self.timer.timeout.connect(self.loadFriendTree)
-        self.timer.start(300000)  # 每五分钟刷新一次联系人
+        self.timer.timeout.connect(self.autoRefreshData)
+        self.timer.start(100)
+        #  self.timer.timeout.connect(self.loadFriendTree)
+        #  self.timer.start(300000)  # 每五分钟刷新一次联系人
         # TODO: 整合所有定时刷新函数
         self.sendButton.clicked.connect(self.sendMessage)  # 调取发送函数
         self.friendTree.clicked.connect(self.loadMessageList)
+
+    def autoRefreshData(self):
+        self.loadMessageList()  # 自动刷新一次消息列表
 
     def loadFriendTree(self):
         """
@@ -103,25 +107,23 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
 
     def loadMessageList(self):
         chat_object_id = self.getSelectedId()
-        if chat_object_id not in self.displayed_message_list:
+        if chat_object_id != self.chat_object_id:
             self.messageList.clear()
-            self.displayed_message_list = (chat_object_id, list())
-        if chat_object_id in self.friend_message_dict:
-            friend_message_list = self.friend_message_dict[chat_object_id]
-            for single_message in friend_message_list:
-                message_id = single_message[0]
-                friend_displayed_message_id_list = self.displayed_message_list[1]
-                if message_id not in friend_displayed_message_id_list:
-                    friend_displayed_message_id_list.append(message_id)
-                    message_unit_time = single_message[1]
-                    sender_name = single_message[2]
-                    message_content = single_message[3]
-                    message_time = time.strftime(
-                        "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
-                    message = message_time + '|' + \
-                        "{:<{x}}".format(sender_name, x=20) + message_content
+            self.chat_object_id = chat_object_id
+        if chat_object_id in self.all_message_dict:
+            message_list = self.all_message_dict[chat_object_id]
+            for single_message_dict in message_list:
+                if single_message_dict not in self.loaded_message_info_dict.values():
+                    message_content = single_message_dict['message_content']
+                    print(message_content)
+                    #  message_time = time.strftime(
+                    #      "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
+                    #  message = message_time + '|' + \
+                    #      "{:<{x}}".format(sender_name, x=20) + message_content
                     newMessage = QtWidgets.QListWidgetItem()
-                    newMessage.setText(message)
+                    newMessage.setText(message_content)
+                    self.loaded_message_info_dict[repr(
+                        newMessage)] = single_message_dict
                     self.messageList.addItem(newMessage)
                     self.messageList.scrollToBottom()
                     #  self.messaglast_time = int(message_unit_time)
@@ -179,7 +181,38 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         receiver_id = self.getSelectedId()
         send_text = self.getSendText()
         if receiver_id and send_text:
-            message.sendFriendMessage(receiver_id, send_text)
+            sendMessage.sendFriendMessage(receiver_id, send_text)
+
+
+class ShowImage(QWidget):
+    def __init__(self, image_path):
+        super().__init__()
+        self.image_path = image_path
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.autoClose)
+        self.timer.start(100)
+        self.title = 'QrCode'
+        self.left = 10
+        self.top = 10
+        self.width = 640
+        self.height = 480
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
+
+        # Create widget
+        label = QLabel(self)
+        pixmap = QtGui.QPixmap(self.image_path)
+        label.setPixmap(pixmap)
+        self.resize(pixmap.width(), pixmap.height())
+
+        self.show()
+
+    def autoClose(self):
+        if not os.path.exists(self.image_path):
+            self.close()
 
 
 def main(friend_message_dict):
@@ -191,10 +224,11 @@ def main(friend_message_dict):
     sys.exit(app.exec_())
 
 
+def showQrcode(image_path):
+    app = QApplication(sys.argv)
+    ex = ShowImage(image_path)
+    sys.exit(app.exec_())
+
+
 if __name__ == '__main__':
     main()
-
-#  resp = message.sendfriendmessage('zero', content)
-#  issuccess = message.issuccess(resp)
-#  if issuccess:
-#      print("发送成功")

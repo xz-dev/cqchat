@@ -15,7 +15,7 @@ if __name__ == '__main__':
         mojo_webqq_config_path = 'webqq.pl'
         manager = mp.Manager()
         POST_data = manager.list()
-        friend_message_dict = manager.dict()
+        all_message_dict = manager.dict()
         #  post_server, post_ui = mp.Pipe()
         #  receive_friend_message, def_receive_friend_message = mp.Pipe()
         # POST服务器
@@ -31,13 +31,13 @@ if __name__ == '__main__':
         is_start = mp.Process(
             target=handlePostData.isStart,
             args=(POST_data,))
-        # 朋友消息处理
+        # 消息处理
         handle_friend_message = mp.Process(
-            target=handlePostData.getFriendMessage,
-            args=(POST_data, friend_message_dict))
+            target=handlePostData.getMessage,
+            args=(POST_data, all_message_dict))
         # 显示主UI
         ui = mp.Process(
-            target=Ui.main, args=(friend_message_dict,))
+            target=Ui.main, args=(all_message_dict,))
         startMojoWeb.stopMojoWebQQ()  # 完全关闭MojoWebQQ
         post_server.start()           # 启动POST服务器
         webqq_server.start()          # 启动MojoWebQQ
