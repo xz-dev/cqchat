@@ -13,35 +13,75 @@ from post import postServer
 
 
 class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
+    """
+    显示主页面
+    """
+
     def __init__(self, all_message_dict):
-        # Explaining super is out of the scope of this article
-        # So please google it if you're not familar with it
-        # Simple reason why we use it here is that it allows us to
-        # access variables, methods etc in the design.py file
         super().__init__()
         self.all_message_dict = all_message_dict
         self.loaded_message_info_dict = dict()
         self.friendTree_widget_dict = dict()
         self.groupTree_widget_dict = dict()
-        self.chat_object_id = 0
+        self.chat_object_info_dict = {'id':None, 'chat_type': None}
         self.friend_info_list = list()
         self.group_info_list = list()
-        self.sendId = None
+        # friend_info_list 与 group_info_list只做备份列表用于查看是否有更改
+        # TODO: 监控POST以实时调整信息
         self.setupUi(self)
         self.loadFriendTree()  # 绘出好友列表
         self.loadGroupTree()  # 绘出群组列表
-        #  self.friendTree.itemDoubleClicked.connect(self.getSendText)
-        #  newPeople = QtWidgets.QListWidgetItem()
-        #  newPeople.setText("HI")
-        #  self.friendTree.insertItem(4, newPeople)
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.autoRefreshData)
-        self.timer.start(100)
+        self.timer.start(50)
         #  self.timer.timeout.connect(self.loadFriendTree)
         #  self.timer.start(300000)  # 每五分钟刷新一次联系人
         # TODO: 整合所有定时刷新函数
         self.sendButton.clicked.connect(self.sendMessage)  # 调取发送函数
-        self.friendTree.clicked.connect(self.loadMessageList)
+        #  self.friendTree.clicked.connect(self.loadMessageList)  # 自动载入消息列表
+        self.friendTree.clicked.connect(self.clickFriendTree) # 获取选中的好友ID
+        self.groupTree.clicked.connect(self.clickGroupTree) # 获取选中的群组ID
+
+    def clickFriendTree(self):
+        """
+        获取选中的好友ID
+        """
+        self.groupTree.clearSelection()
+        current_friendTree = repr(self.friendTree.currentItem())
+        if current_friendTree in self.friendTree_widget_dict:
+            current_id = self.friendTree_widget_dict[current_friendTree]['id']
+            if self.chat_object_info_dict['id'] != current_id:
+                self.chat_object_info_dict['id'] = self.friendTree_widget_dict[current_friendTree]['id']
+                self.chat_object_info_dict['chat_type'] = 'friend'
+                self.loaded_message_info_dict.clear()
+                self.messageList.clear()
+            #  return sendid
+
+    def clickGroupTree(self):
+        """
+        获取选中的群组ID
+        """
+        self.friendTree.clearSelection()
+        current_groupTree = repr(self.groupTree.currentItem())
+        if current_groupTree in self.groupTree_widget_dict:
+            current_id = self.groupTree_widget_dict[current_groupTree]['id']
+            if self.chat_object_info_dict['id'] != current_id:
+                self.chat_object_info_dict['id'] = current_id
+                self.chat_object_info_dict['chat_type'] = 'group'
+                self.loaded_message_info_dict.clear()
+                self.messageList.clear()
+                #  return sendid
+
+    def getSelectedId(self):
+        """
+        获取当前选中的联系人
+        """
+        current_friendTree = repr(self.friendTree.currentItem())
+        if current_friendTree in self.friendTree_widget_dict:
+            sendid = self.friendTree_widget_dict[current_friendTree]['id']
+            return sendid
+        else:
+            return None
 
     def autoRefreshData(self):
         self.loadMessageList()  # 自动刷新一次消息列表
@@ -77,11 +117,6 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                         # TODO: 保持联系人展开信息
                 self.friendTree.addTopLevelItem(treecategory)
                 # 完成分类的联系人绘制
-        #  for frienfname in friendTree:
-        #      qtwidgets.qlistwidgetitem(frienfname, self.friendTree)
-        #  rowfriendTree = self.peoplelist.count()
-        #  newpeople = qtwidgets.qlistwidgetitem()
-        # 将好友名字写入列表
 
     def loadGroupTree(self):
         """
@@ -106,71 +141,30 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                 self.groupTree.addTopLevelItem(treecategory)
 
     def loadMessageList(self):
-        chat_object_id = self.getSelectedId()
-        if chat_object_id != self.chat_object_id:
-            self.messageList.clear()
-            self.chat_object_id = chat_object_id
-        if chat_object_id in self.all_message_dict:
-            message_list = self.all_message_dict[chat_object_id]
-            for single_message_dict in message_list:
-                if single_message_dict not in self.loaded_message_info_dict.values():
-                    message_content = single_message_dict['message_content']
-                    print(message_content)
-                    #  message_time = time.strftime(
-                    #      "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
-                    #  message = message_time + '|' + \
-                    #      "{:<{x}}".format(sender_name, x=20) + message_content
-                    newMessage = QtWidgets.QListWidgetItem()
-                    newMessage.setText(message_content)
-                    self.loaded_message_info_dict[repr(
-                        newMessage)] = single_message_dict
-                    self.messageList.addItem(newMessage)
-                    self.messageList.scrollToBottom()
-                    #  self.messaglast_time = int(message_unit_time)
-                    # 时间戳是str类型
-                    #  message_rows = self.messageList.count()
-                    #  if message_rows:
-                    #      message_rows = list(range(self.messageList.count()))[-1]
-                    #      if message != self.messageList.item(message_rows).text():
-                    #          self.messageList.addItem(newMessage)
-                    #  else:
-                    #      self.messageList.addItem(newMessage)
-
-                    #  for index in range(self.messageList.count()):
-                    #      print(self.messageList.item(index).text())
-            #      QtWidgets.QListWidgetItem(message, self.messageList)
-            #  row_message_list = self.messageList.count()
-            #  new_message = QtWidgets.QListWidgetItem()
-
-    def getSelectedId(self):
         """
-        获取当前选中的联系人
+        载入消息列表
         """
-        #  hititem = self.friendTree.currentitem()
-        #  textlist = list()
-        #  for ix in self.friendTree.selectedIndexes():
-        #      text = ix.data()
-        #      textlist.append(text)
-        #  if len(textlist) != 0:
-        #      sendid = textlist[-1]
-        current_friendTree = repr(self.friendTree.currentItem())
-        if current_friendTree in self.friendTree_widget_dict:
-            sendid = self.friendTree_widget_dict[current_friendTree]['id']
-            return sendid
-        else:
-            return None
+        if self.chat_object_info_dict['id']:
+            chat_object_id = self.chat_object_info_dict['id']
+            if chat_object_id in self.all_message_dict:
+                message_list = self.all_message_dict[chat_object_id]
+                for single_message_dict in message_list:
+                    if single_message_dict not in self.loaded_message_info_dict.values():
+                        message_content = single_message_dict['message_content']
+                        newMessage = QtWidgets.QListWidgetItem()
+                        newMessage.setText(message_content)
+                        self.loaded_message_info_dict[repr(
+                            newMessage)] = single_message_dict
+                        self.messageList.addItem(newMessage)
+                        self.messageList.scrollToBottom()
+
 
     def getSendText(self):
         """
         发送键按下后获取输入框文本并清空
         """
-        #  self.friendTree.sortltems()
-        #  del_ = self.friendTree.selecteditems
-        #  del_item = self.takeitem(self.row(del_))
         send_text = self.inputBox.toPlainText()
-        if len(send_text):
-            self.inputBox.clear()
-        else:
+        if not len(send_text):
             send_text = None
         return send_text
 
@@ -178,13 +172,22 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         """
         发送消息
         """
-        receiver_id = self.getSelectedId()
+        receiver_id = self.chat_object_info_dict['id']
         send_text = self.getSendText()
         if receiver_id and send_text:
-            sendMessage.sendFriendMessage(receiver_id, send_text)
+            self.inputBox.clear()
+            chat_type = self.chat_object_info_dict['chat_type']
+            if chat_type == 'friend':
+                sendMessage.sendFriendMessage(receiver_id, send_text)
+            elif chat_type == 'group':
+                sendMessage.sendGroupMessage(receiver_id, send_text)
 
 
 class ShowImage(QWidget):
+    """
+    显示二维码
+    """
+
     def __init__(self, image_path):
         super().__init__()
         self.image_path = image_path
@@ -216,8 +219,6 @@ class ShowImage(QWidget):
 
 
 def main(friend_message_dict):
-    #  global tmp_friend_message_dict
-    #  tmp_friend_message_dict = friend_message_dict
     app = QtWidgets.QApplication(sys.argv)
     ui = MainPage(friend_message_dict)
     ui.show()

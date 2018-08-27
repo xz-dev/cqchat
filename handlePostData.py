@@ -26,23 +26,29 @@ def isStart(post_data_list):
 
 
 def handleMessageContent(message_unit_time, sender_name, message_content):
-    message_time = time.strftime(
-        "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
-    message = message_time + '|' + \
-        "{:<{x}}".format(sender_name, x=20) + message_content
+    if message_unit_time and sender_name and message_content:
+        message_time = time.strftime(
+            "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
+        message = message_time + '|' + \
+            "{:<{x}}".format(sender_name, x=20) + message_content
+    else:
+        message = None
     return message
 
 
 def findMessage(post_json):
     if post_json['post_type'] != 'event':
-        message_id = 0
-        message_unit_time = 0
-        sender_id = 0
+        message_id = None
+        sender_id = None
+        sender_name = None
+        message_unit_time = None
+        message_content = None
         if post_json['post_type'] == 'receive_message' and post_json['class'] == 'recv':
             # 接收消息
             if post_json['type'] == 'friend_message':
                 # 获取好友发送的消息
                 message_id = post_json['id']
+                group_id = None
                 sender_id = post_json['sender_id']  # 发送id 即好友id
                 sender_name = post_json['sender']
                 message_unit_time = post_json['time']
@@ -59,9 +65,18 @@ def findMessage(post_json):
             if post_json['type'] == 'friend_message':
                 # 自己发给好友的消息
                 message_id = post_json['id']
-                friend_id = post_json['receiver_id']  # 接收id 即好友id
+                #  friend_id = post_json['receiver_id']  # 接收id 即好友id
+                group_id = None
                 sender_name = post_json['sender'] + "(me)"
-                sender_id = post_json['receiver_id']  # 隐藏自己的id
+                sender_id = post_json['receiver_id']  # 隐藏自己的id, 替换为好友id
+                message_unit_time = post_json['time']
+                message_content = post_json['content']
+            elif post_json['type'] == 'group_message':
+                # 自己发给群组的消息
+                message_id = post_json['id']
+                group_id = post_json['group_id']  # 群组id
+                sender_id = post_json['sender_id']
+                sender_name = post_json['sender'] + "(me)"
                 message_unit_time = post_json['time']
                 message_content = post_json['content']
         message = handleMessageContent(message_unit_time=message_unit_time,
@@ -73,6 +88,7 @@ def findMessage(post_json):
                                'message_unit_time': message_unit_time,
                                'message_content': message,
                                'sender_id': sender_id,
+                               'group_id': group_id,
                                }
 
     else:
@@ -108,7 +124,10 @@ def getMessage(post_data_list, message_dict):
                 for single_message_dict in message_dict_list:
                     removeRecordedManssage(single_message_dict['message_id'],
                                            post_data_list)
-                    sender_id = single_message_dict['sender_id']
+                    if single_message_dict['group_id']:
+                        sender_id = single_message_dict['group_id']
+                    else:
+                        sender_id = single_message_dict['sender_id']
                     if sender_id in message_dict:
                         tmp_list = message_dict[sender_id]
                         # 确保列表顺序按时间顺序
