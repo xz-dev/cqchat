@@ -83,8 +83,8 @@ def findMessage(post_json):
                                        sender_name=sender_name,
                                        message_content=message_content)
         single_message_dict = {'message_id': message_id,
-                               'local_unix_time': post_json['local_unix_time'],
                                # 用于判断消息先后
+                               'local_unix_time': post_json['local_unix_time'],
                                'message_unit_time': message_unit_time,
                                'message_content': message,
                                'sender_id': sender_id,
@@ -102,7 +102,7 @@ def removeRecordedManssage(message_id, post_data_list):
             post_data_list.remove(post_json)
 
 
-def getMessage(post_data_list, message_dict):
+def getMessage(post_data_list, all_message_dict):
     """
     提取所有有关好友的消息
     (包括接收与发送)
@@ -113,7 +113,6 @@ def getMessage(post_data_list, message_dict):
         'message_content': message,
         'sender_id': sender_id,
         }, ...]
-    #  {id:[(message_time, sender_name, message_content)], ...}
     """
     pool = mp.Pool()
     while True:
@@ -128,8 +127,8 @@ def getMessage(post_data_list, message_dict):
                         sender_id = single_message_dict['group_id']
                     else:
                         sender_id = single_message_dict['sender_id']
-                    if sender_id in message_dict:
-                        tmp_list = message_dict[sender_id]
+                    if sender_id in all_message_dict:
+                        tmp_list = all_message_dict[sender_id]
                         # 确保列表顺序按时间顺序
                         message_dict_last_message_unit_time = tmp_list[-1]['message_unit_time']
                         message_unit_time = single_message_dict['message_unit_time']
@@ -137,27 +136,10 @@ def getMessage(post_data_list, message_dict):
                             tmp_list.append(single_message_dict)
                         else:
                             tmp_list.insert(-1, single_message_dict)
-                        message_dict[sender_id] = tmp_list
+                        all_message_dict[sender_id] = tmp_list
                     else:
                         tmp_list = [single_message_dict]
-                        message_dict[sender_id] = tmp_list
-                    # 因无法直接操作friend_message_dict
-                    # 采用以下解决方案
-                    # https://stackoverflow.com/questions/35202278/cannot-append-items-to-multiprocessing-shared-list
-
-                #  for tmp_list in message_list:
-                #      sender_id = tmp_list[0]
-                #      message = tmp_list[1]
-                #      message_id = tmp_list[1][0]
-                #      removeRecordedManssage(message_id, post_data_list)
-                #      if sender_id in friend_message_dict.keys():
-                #          item = friend_message_dict[sender_id]
-                #          item.append(message)
-                #          friend_message_dict[sender_id] = item
-                #      else:
-                #          item = friend_message_dict[sender_id] = list()
-                #          item.append(message)
-                #          friend_message_dict[sender_id] = item
+                        all_message_dict[sender_id] = tmp_list
             else:
                 time.sleep(0.2)
         else:

@@ -12,4 +12,4 @@ $client->load("Openqq",data=>{
 		post_event => 1,
 		post_event_list => ['login','stop','state_change','input_qrcode'],
 });
-$client->run();
+$client->run();<Paste>

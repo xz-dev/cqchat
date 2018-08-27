@@ -8,6 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -41,7 +42,8 @@ class Ui_MainWindow(object):
         self.inputBox = QtWidgets.QTextEdit(self.layoutWidget)
         self.inputBox.setMinimumSize(QtCore.QSize(840, 30))
         self.inputBox.setMaximumSize(QtCore.QSize(840, 30))
-        self.inputBox.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self.inputBox.viewport().setProperty(
+            "cursor", QtGui.QCursor(QtCore.Qt.IBeamCursor))
         self.inputBox.setObjectName("inputBox")
         self.horizontalLayout.addWidget(self.inputBox)
         self.sendButton = QtWidgets.QPushButton(self.layoutWidget)
@@ -71,7 +73,8 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "WebQQ-Python"))
         self.friendTree.headerItem().setText(0, _translate("MainWindow", "好友"))
         self.groupTree.headerItem().setText(0, _translate("MainWindow", "群组"))
-        self.inputBox.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>输入</p></body></html>"))
+        self.inputBox.setWhatsThis(_translate(
+            "MainWindow", "<html><head/><body><p>输入</p></body></html>"))
         self.sendButton.setText(_translate("MainWindow", "发送"))
-        self.menuWebQQ_Python.setTitle(_translate("MainWindow", "WebQQ-&Python"))
-
+        self.menuWebQQ_Python.setTitle(
+            _translate("MainWindow", "WebQQ-&Python"))

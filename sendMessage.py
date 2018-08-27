@@ -19,10 +19,11 @@ def sendMessage(chat_object_id, message_content, api, host='127.0.0.1', port='50
 
 def sendFriendMessage(chat_object_id, message_content):
     resp = sendMessage(chat_object_id, message_content,
-                       '/openqq/send_friend_message')
+                       api='/openqq/send_friend_message')
     return resp
+
 
 def sendGroupMessage(chat_object_id, message_content):
     resp = sendMessage(chat_object_id, message_content,
-                       '/openqq/send_group_message')
+                       api='/openqq/send_group_message')
     return resp

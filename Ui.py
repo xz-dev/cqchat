@@ -1,15 +1,12 @@
 import sys
-import time
 import os
 from PyQt5.QtWidgets import QApplication, QWidget
-#  from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget, QLabel
 from gui import MainGui
 
 import sendMessage
 from get import getInfo
-from post import postServer
 
 
 class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
@@ -23,7 +20,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         self.loaded_message_info_dict = dict()
         self.friendTree_widget_dict = dict()
         self.groupTree_widget_dict = dict()
-        self.chat_object_info_dict = {'id':None, 'chat_type': None}
+        self.chat_object_info_dict = {'id': None, 'chat_type': None}
         self.friend_info_list = list()
         self.group_info_list = list()
         # friend_info_list 与 group_info_list只做备份列表用于查看是否有更改
@@ -38,9 +35,11 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         #  self.timer.start(300000)  # 每五分钟刷新一次联系人
         # TODO: 整合所有定时刷新函数
         self.sendButton.clicked.connect(self.sendMessage)  # 调取发送函数
-        #  self.friendTree.clicked.connect(self.loadMessageList)  # 自动载入消息列表
-        self.friendTree.clicked.connect(self.clickFriendTree) # 获取选中的好友ID
-        self.groupTree.clicked.connect(self.clickGroupTree) # 获取选中的群组ID
+        self.friendTree.clicked.connect(self.clickFriendTree)  # 获取选中的好友ID
+        self.groupTree.clicked.connect(self.clickGroupTree)  # 获取选中的群组ID
+
+    def autoRefreshData(self):
+        self.loadMessageList()  # 自动刷新一次消息列表
 
     def clickFriendTree(self):
         """
@@ -55,7 +54,6 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                 self.chat_object_info_dict['chat_type'] = 'friend'
                 self.loaded_message_info_dict.clear()
                 self.messageList.clear()
-            #  return sendid
 
     def clickGroupTree(self):
         """
@@ -70,21 +68,6 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                 self.chat_object_info_dict['chat_type'] = 'group'
                 self.loaded_message_info_dict.clear()
                 self.messageList.clear()
-                #  return sendid
-
-    def getSelectedId(self):
-        """
-        获取当前选中的联系人
-        """
-        current_friendTree = repr(self.friendTree.currentItem())
-        if current_friendTree in self.friendTree_widget_dict:
-            sendid = self.friendTree_widget_dict[current_friendTree]['id']
-            return sendid
-        else:
-            return None
-
-    def autoRefreshData(self):
-        self.loadMessageList()  # 自动刷新一次消息列表
 
     def loadFriendTree(self):
         """
@@ -157,7 +140,6 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                             newMessage)] = single_message_dict
                         self.messageList.addItem(newMessage)
                         self.messageList.scrollToBottom()
-
 
     def getSendText(self):
         """

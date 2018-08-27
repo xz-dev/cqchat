@@ -16,8 +16,6 @@ if __name__ == '__main__':
         manager = mp.Manager()
         POST_data = manager.list()
         all_message_dict = manager.dict()
-        #  post_server, post_ui = mp.Pipe()
-        #  receive_friend_message, def_receive_friend_message = mp.Pipe()
         # POST服务器
         post_server = mp.Process(
             target=postServer.run,

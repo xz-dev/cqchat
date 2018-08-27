@@ -1,137 +1,152 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>1208</width>
-    <height>819</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>WebQQ-Python</string>
-  </property>
-  <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>5</x>
-      <y>4</y>
-      <width>1205</width>
-      <height>763</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QTreeWidget" name="friendTree">
-         <property name="minimumSize">
-          <size>
-           <width>261</width>
-           <height>451</height>
-          </size>
-         </property>
-         <column>
-          <property name="text">
-           <string>好友</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTreeWidget" name="groupTree">
-         <column>
-          <property name="text">
-           <string>群组</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QListWidget" name="messageList">
-         <property name="minimumSize">
-          <size>
-           <width>931</width>
-           <height>721</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QTextEdit" name="inputBox">
-           <property name="minimumSize">
-            <size>
-             <width>840</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>840</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="cursor" stdset="0">
-            <cursorShape>IBeamCursor</cursorShape>
-           </property>
-           <property name="whatsThis">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;输入&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="sendButton">
-           <property name="minimumSize">
-            <size>
-             <width>84</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>发送</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1208</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuWebQQ_Python">
-    <property name="title">
-     <string>WebQQ-&amp;Python</string>
-    </property>
-   </widget>
-   <addaction name="menuWebQQ_Python"/>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
- </widget>
- <resources/>
- <connections/>
-</ui>
+<?xml version = "1.0" encoding = "UTF-8"?>
+<ui version = "4.0" >
+    <class > MainWindow < /class >
+    <widget class = "QMainWindow" name = "MainWindow" >
+        <property name = "geometry" >
+            <rect >
+                <x > 0 < /x >
+                <y > 0 < /y >
+                <width > 1208 < /width >
+                <height > 819 < /height >
+            </rect >
+        </property >
+        <property name = "windowTitle" >
+            <string > WebQQ-Python < /string >
+        </property >
+        <widget class = "QWidget" name = "centralwidget" >
+            <widget class = "QWidget" name = "layoutWidget" >
+                <property name = "geometry" >
+                    <rect >
+                        <x > 5 < /x >
+                        <y > 4 < /y >
+                        <width > 1205 < /width >
+                        <height > 763 < /height >
+                    </rect >
+                </property >
+                <layout class = "QHBoxLayout" name = "horizontalLayout_2" >
+                    <item >
+                        <layout class = "QVBoxLayout" name = "verticalLayout_2" >
+                            <item >
+                                <widget class = "QTreeWidget" name = "friendTree" >
+                                    <property name = "minimumSize" >
+                                        <size >
+                                            <width > 261 < /width >
+                                            <height > 451 < /height >
+                                        </size >
+                                    </property >
+                                    <column >
+                                        <property name = "text" >
+                                            <string > 好友 < /string >
+                                        </property >
+                                    </column >
+                                </widget >
+                            </item >
+                            <item >
+                                <widget class = "QTreeWidget" name = "groupTree" >
+                                    <column >
+                                        <property name = "text" >
+                                            <string > 群组 < /string >
+                                        </property >
+                                    </column >
+                                </widget >
+                            </item >
+                        </layout >
+                    </item >
+                    <item >
+                        <layout class = "QVBoxLayout" name = "verticalLayout" >
+                            <item >
+                                <widget class = "QListWidget" name = "messageList" >
+                                    <property name = "minimumSize" >
+                                        <size >
+                                            <width > 931 < /width >
+                                            <height > 721 < /height >
+                                        </size >
+                                    </property >
+                                </widget >
+                            </item >
+                            <item >
+                                <layout class = "QHBoxLayout" name = "horizontalLayout" >
+                                    <item >
+                                        <widget class = "QTextEdit" name = "inputBox" >
+                                            <property name = "minimumSize" >
+                                                <size >
+                                                    <width > 840 < /width >
+                                                    <height > 30 < /height >
+                                                </size >
+                                            </property >
+                                            <property name = "maximumSize" >
+                                                <size >
+                                                    <width > 840 < /width >
+                                                    <height > 30 < /height >
+                                                </size >
+                                            </property >
+                                            <property name = "cursor" stdset = "0" >
+                                                <cursorShape > IBeamCursor < /cursorShape >
+                                            </property >
+                                            <property name = "whatsThis" >
+                                                <string > &lt
+                                                html & gt
+                                                &lt
+                                                head/&gt
+                                                &lt
+                                                body & gt
+                                                &lt
+                                                p & gt
+                                                输入 & lt
+                                                /p & gt
+                                                &lt
+                                                /body & gt
+                                                &lt
+                                                /html & gt
+                                                </string >
+                                            </property >
+                                        </widget >
+                                    </item >
+                                    <item >
+                                        <widget class = "QPushButton" name = "sendButton" >
+                                            <property name = "minimumSize" >
+                                                <size >
+                                                    <width > 84 < /width >
+                                                    <height > 30 < /height >
+                                                </size >
+                                            </property >
+                                            <property name = "maximumSize" >
+                                                <size >
+                                                    <width > 16777215 < /width >
+                                                    <height > 30 < /height >
+                                                </size >
+                                            </property >
+                                            <property name = "text" >
+                                                <string > 发送 < /string >
+                                            </property >
+                                        </widget >
+                                    </item >
+                                </layout >
+                            </item >
+                        </layout >
+                    </item >
+                </layout >
+            </widget >
+        </widget >
+        <widget class = "QMenuBar" name = "menubar" >
+            <property name = "geometry" >
+                <rect >
+                    <x > 0 < /x >
+                    <y > 0 < /y >
+                    <width > 1208 < /width >
+                    <height > 30 < /height >
+                </rect >
+            </property >
+            <widget class = "QMenu" name = "menuWebQQ_Python" >
+                <property name = "title" >
+                    <string > WebQQ-&amp
+                    Python < /string >
+                </property >
+            </widget >
+            <addaction name = "menuWebQQ_Python"/>
+        </widget >
+        <widget class = "QStatusBar" name = "statusbar"/>
+    </widget >
+    <resources/>
+    <connections/>
+</ui >
