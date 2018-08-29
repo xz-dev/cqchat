@@ -1,17 +1,18 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QWidget, QSystemTrayIcon
+from PyQt5.QtWidgets import QApplication, QWidget, QSystemTrayIcon, QMenu, QAction, qApp
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget, QLabel
 import MainGui
 
 import sendMessage
 from get import getInfo
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+#  from PyQt5.QtWidgets import *
+#  from PyQt5.QtCore import *
+#  from PyQt5.QtGui import *
 
 
 class TrayIcon(QSystemTrayIcon):
@@ -52,7 +53,7 @@ class TrayIcon(QSystemTrayIcon):
         sys.exit()
 
 
-class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
+class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
     """
     显示主页面
     """
@@ -61,8 +62,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         super().__init__()
         # 系统托盘图标
         super(MainPage, self).__init__(parent)
-        ti = TrayIcon(self)
-        ti.show()
+        self.ti = TrayIcon(self)
+        self.ti.show()
         self.all_message_dict = all_message_dict
         self.loaded_message_info_dict = dict()
         self.friendTree_widget_dict = dict()
@@ -79,22 +80,77 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         #  self.timer.start(300000)  # 每五分钟刷新一次联系人
         self.autoRefreshData()
         # TODO: 整合所有定时刷新函数
-        self.clickEvent()
+        self.connectEvent()
 
-    def clickEvent(self):
+    def connectEvent(self):
+        """
+        绑定的信号槽
+        """
         self.sendButton.clicked.connect(self.sendMessage)  # 调取发送函数
         self.friendTree.clicked.connect(self.clickFriendTree)  # 获取选中的好友ID
         self.groupTree.clicked.connect(self.clickGroupTree)  # 获取选中的群组ID
         self.sendButton.setShortcut("Ctrl+Return")  # CTRL + 回车键绑定发送键
 
     def autoRefreshData(self):
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.loadMessageList)
-        self.timer.start(50)
+        """
+        定时刷新数据
+        """
+        self.timer1 = QtCore.QTimer(self)
+        self.timer1.timeout.connect(self.loadMessageList)
+        self.timer1.start(50)
+        self.timer2 = QtCore.QTimer(self)
+        self.timer2.timeout.connect(self.messageNotification)
+        self.timer2.start(50)
 
     def trayMenu(self):
+        """
+        系统托盘
+        """
         self.quitAction = QAction("退出", self, triggered=self.quit)
         # 系统托盘退出菜单
+
+    def messageNotification(self):
+        """
+        显示系统级消息提醒
+        """
+        if 'message_notification_list' in self.all_message_dict:
+            message_notification_list = self.all_message_dict['message_notification_list']
+            del self.all_message_dict['message_notification_list']
+            chat_object_info_dict = self.chat_object_info_dict
+            for single_message_dict in message_notification_list:
+                if self.isActiveWindow():
+                    # 判断为活动窗口
+                    chat_object_info_dict = self.chat_object_info_dict
+                    sender_id = single_message_dict['sender_id']
+                    group_id = single_message_dict['group_id']
+                    chat_type = chat_object_info_dict['chat_type']
+                    chat_id = chat_object_info_dict['id']
+                    if not group_id and chat_type == 'friend' and chat_id == sender_id:
+                        # 判断为正在聊天的好友
+                        pass
+                    elif group_id and chat_type == 'group' and chat_id == group_id:
+                        # 判断为正在聊天的群组
+                        pass
+                    else:
+                        group_name = single_message_dict['group_name']
+                        if group_name:
+                            sender_name = group_name
+                        else:
+                            friend_name = single_message_dict['sender_name']
+                            sender_name = friend_name
+                        message_content = single_message_dict['message_content']
+                        self.ti.showMessage(
+                            sender_name, message_content, self.ti.icon)
+                else:
+                    group_name = single_message_dict['group_name']
+                    if group_name:
+                        sender_name = group_name
+                    else:
+                        friend_name = single_message_dict['sender_name']
+                        sender_name = friend_name
+                    message_content = single_message_dict['message_content']
+                    self.ti.showMessage(
+                        sender_name, message_content, self.ti.icon)
 
     def clickFriendTree(self):
         """

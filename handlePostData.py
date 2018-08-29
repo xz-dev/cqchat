@@ -48,6 +48,7 @@ def findMessage(post_json):
             if post_json['type'] == 'friend_message':
                 # 获取好友发送的消息
                 message_id = post_json['id']
+                group_name = None
                 group_id = None
                 sender_id = post_json['sender_id']  # 发送id 即好友id
                 sender_name = post_json['sender']
@@ -56,6 +57,7 @@ def findMessage(post_json):
             elif post_json['type'] == 'group_message':
                 # 获取群组发送的消息
                 message_id = post_json['id']
+                group_name = post_json['group']
                 group_id = post_json['group_id']  # 群组id
                 sender_id = post_json['sender_id']  # 发言群员id
                 sender_name = post_json['sender']
@@ -65,7 +67,7 @@ def findMessage(post_json):
             if post_json['type'] == 'friend_message':
                 # 自己发给好友的消息
                 message_id = post_json['id']
-                #  friend_id = post_json['receiver_id']  # 接收id 即好友id
+                group_name = None
                 group_id = None
                 sender_name = post_json['sender'] + "(me)"
                 sender_id = post_json['receiver_id']  # 隐藏自己的id, 替换为好友id
@@ -74,6 +76,7 @@ def findMessage(post_json):
             elif post_json['type'] == 'group_message':
                 # 自己发给群组的消息
                 message_id = post_json['id']
+                group_name = post_json['group']
                 group_id = post_json['group_id']  # 群组id
                 sender_id = post_json['sender_id']
                 sender_name = post_json['sender'] + "(me)"
@@ -87,13 +90,30 @@ def findMessage(post_json):
                                'local_unix_time': post_json['local_unix_time'],
                                'message_unit_time': message_unit_time,
                                'message_content': message,
+                               'sender_name': sender_name,
                                'sender_id': sender_id,
+                               'group_name': group_name,
                                'group_id': group_id,
                                }
 
     else:
         single_message_dict = None
     return single_message_dict
+
+
+def addMessageNotification(single_message_dict, all_message_dict):
+    if 'message_notification_list' in all_message_dict:
+        message_notification_list = all_message_dict['message_notification_list']
+        for tmp_list in message_notification_list:
+            message_dict_last_message_unit_time = tmp_list[-1]['message_unit_time']
+            message_unit_time = single_message_dict['message_unit_time']
+            if message_dict_last_message_unit_time <= message_unit_time:
+                message_notification_list.append(single_message_dict)
+            else:
+                message_notification_list.insert(-1, single_message_dict)
+        all_message_dict['message_notification_list'] = message_notification_list
+    else:
+        all_message_dict['message_notification_list'] = [single_message_dict, ]
 
 
 def removeRecordedManssage(message_id, post_data_list):
@@ -111,7 +131,10 @@ def getMessage(post_data_list, all_message_dict):
         'message_id': message_id,
         'message_unit_time': message_unit_time,
         'message_content': message,
+        'sender_name': sender_name,
         'sender_id': sender_id,
+        'group_name': group_name,
+        'group_id': group_id,
         }, ...]
     """
     pool = mp.Pool()
@@ -123,6 +146,8 @@ def getMessage(post_data_list, all_message_dict):
                 for single_message_dict in message_dict_list:
                     removeRecordedManssage(single_message_dict['message_id'],
                                            post_data_list)
+                    addMessageNotification(single_message_dict,
+                                           all_message_dict)
                     if single_message_dict['group_id']:
                         sender_id = single_message_dict['group_id']
                     else:
