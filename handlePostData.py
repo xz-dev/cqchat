@@ -115,7 +115,7 @@ def getMessage(post_data_list, all_message_dict):
         }, ...]
     """
     pool = mp.Pool()
-    while True:
+    while post_data_list != False:
         if len(post_data_list):
             message_dict_list = pool.map(findMessage, post_data_list)
             message_dict_list = [i for i in message_dict_list if i != None]

@@ -1,12 +1,55 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QSystemTrayIcon
 from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget, QLabel
-from gui import MainGui
+import MainGui
 
 import sendMessage
 from get import getInfo
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+
+
+class TrayIcon(QSystemTrayIcon):
+    def __init__(self, parent=None):
+        super(TrayIcon, self).__init__(parent)
+        self.showMenu()
+        self.showIcon()
+        self.connectEvent()
+
+    def connectEvent(self):
+        self.activated.connect(self.iconClied)
+        # 把鼠标点击图标的信号和槽连接
+
+    def iconClied(self, reason):
+        "鼠标点击icon传递的信号会带有一个整形的值，1是表示单击右键，2是双击，3是单击左键，4是用鼠标中键点击"
+        if reason == 2 or reason == 3:
+            pw = self.parent()
+            if pw.isVisible():
+                pw.hide()
+            else:
+                pw.show()
+
+    def showMenu(self):
+        self.menu = QMenu()
+        self.quitAction = QAction("退出", self, triggered=self.quit)
+        self.menu.addAction(self.quitAction)
+        self.setContextMenu(self.menu)
+
+    def showIcon(self):
+        self.setIcon(QIcon("./icon/tray_icon.png"))
+        self.icon = self.MessageIcon()
+
+    def quit(self):
+        "保险起见，为了完整的退出"
+        self.setVisible(False)
+        self.parent().close()
+        qApp.quit()
+        sys.exit()
 
 
 class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
@@ -14,8 +57,12 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
     显示主页面
     """
 
-    def __init__(self, all_message_dict):
+    def __init__(self, all_message_dict, parent=None):
         super().__init__()
+        # 系统托盘图标
+        super(MainPage, self).__init__(parent)
+        ti = TrayIcon(self)
+        ti.show()
         self.all_message_dict = all_message_dict
         self.loaded_message_info_dict = dict()
         self.friendTree_widget_dict = dict()
@@ -28,23 +75,32 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         self.setupUi(self)
         self.loadFriendTree()  # 绘出好友列表
         self.loadGroupTree()  # 绘出群组列表
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.autoRefreshData)
-        self.timer.start(50)
         #  self.timer.timeout.connect(self.loadFriendTree)
         #  self.timer.start(300000)  # 每五分钟刷新一次联系人
+        self.autoRefreshData()
         # TODO: 整合所有定时刷新函数
+        self.clickEvent()
+
+    def clickEvent(self):
         self.sendButton.clicked.connect(self.sendMessage)  # 调取发送函数
         self.friendTree.clicked.connect(self.clickFriendTree)  # 获取选中的好友ID
         self.groupTree.clicked.connect(self.clickGroupTree)  # 获取选中的群组ID
+        self.sendButton.setShortcut("Ctrl+Return")  # CTRL + 回车键绑定发送键
 
     def autoRefreshData(self):
-        self.loadMessageList()  # 自动刷新一次消息列表
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.loadMessageList)
+        self.timer.start(50)
+
+    def trayMenu(self):
+        self.quitAction = QAction("退出", self, triggered=self.quit)
+        # 系统托盘退出菜单
 
     def clickFriendTree(self):
         """
         获取选中的好友ID
         """
+        self.inputBox.setFocus()  # 文本框获得焦点
         self.groupTree.clearSelection()
         current_friendTree = repr(self.friendTree.currentItem())
         if current_friendTree in self.friendTree_widget_dict:
@@ -59,6 +115,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         """
         获取选中的群组ID
         """
+        self.inputBox.setFocus()  # 文本框获得焦点
         self.friendTree.clearSelection()
         current_groupTree = repr(self.groupTree.currentItem())
         if current_groupTree in self.groupTree_widget_dict:
@@ -92,12 +149,16 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                         if not friend_markname:
                             friend_markname = friend_name
                         friend_tree_info = QTreeWidgetItem([friend_markname])
+                        friend_tree_info.setFlags(
+                            Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
                         self.friendTree_widget_dict[repr(
                             friend_tree_info)] = single_friend_info_list
                         treecategory.addChild(friend_tree_info)
                         treecategory.setExpanded(True)
                         # 自动展开联系人
                         # TODO: 保持联系人展开信息
+                treecategory.setFlags(
+                    Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
                 self.friendTree.addTopLevelItem(treecategory)
                 # 完成分类的联系人绘制
 
@@ -117,10 +178,14 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                     if not group_markname:
                         group_markname = group_name
                         group_tree_info = QTreeWidgetItem([group_markname])
+                        group_tree_info.setFlags(
+                            Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
                         self.groupTree_widget_dict[repr(
                             group_tree_info)] = single_group_info_dict
                         treecategory.addChild(group_tree_info)
                         treecategory.setExpanded(True)
+                treecategory.setFlags(
+                    Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
                 self.groupTree.addTopLevelItem(treecategory)
 
     def loadMessageList(self):
@@ -154,6 +219,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         """
         发送消息
         """
+        self.inputBox.setFocus()  # 文本框获得焦点
         receiver_id = self.chat_object_info_dict['id']
         send_text = self.getSendText()
         if receiver_id and send_text:

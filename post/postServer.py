@@ -39,7 +39,8 @@ def run(POST_data, server_class=HTTPServer, port=5001):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     try:
-        httpd.serve_forever()
+        while POST_data != False:
+            httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     httpd.server_close()

@@ -47,6 +47,8 @@ if __name__ == '__main__':
         # 启动主页UI
         ui.start()
         ui.join()
+        # UI关闭, POST_data = False 以示程序关闭
+        POST_data = False
         handle_friend_message.join()
         webqq_server.join()
         post_server.join()
