@@ -5,10 +5,13 @@ import Ui
 
 
 def findQrcode(post_json):
-    if post_json['event'] == 'input_qrcode':
-        return post_json['params'][0]
-    elif post_json['params'] == ['loading', 'scaning']:
-        return True
+    if post_json['post_type'] == 'event':
+        if post_json['event'] == 'input_qrcode':
+            return post_json['params'][0]
+        elif post_json['params'] == ['loading', 'scaning']:
+            return True
+        else:
+            return False
     else:
         return False
 

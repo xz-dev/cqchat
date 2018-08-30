@@ -206,7 +206,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                             friend_markname = friend_name
                         friend_tree_info = QTreeWidgetItem([friend_markname])
                         friend_tree_info.setFlags(
-                            Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                            Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
                         self.friendTree_widget_dict[repr(
                             friend_tree_info)] = single_friend_info_list
                         treecategory.addChild(friend_tree_info)

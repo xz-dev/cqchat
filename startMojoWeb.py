@@ -8,7 +8,10 @@ def stopMojoWebQQ():
     """
     阻塞型关闭客户端
     """
-    args = ['killall', 'perl']
+    args = ['pidof', 'perl']
+    pid_id = subprocess.check_output(args)
+    pid_id = str(int(pid_id))
+    args = ['kill', pid_id]
     proc = subprocess.Popen(args)
 
 
