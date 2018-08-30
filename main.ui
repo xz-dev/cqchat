@@ -33,7 +33,7 @@
          <bool>false</bool>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="documentMode">
          <bool>false</bool>
@@ -44,11 +44,63 @@
         <property name="tabBarAutoHide">
          <bool>false</bool>
         </property>
+        <widget class="QWidget" name="searchTab">
+         <attribute name="icon">
+          <iconset>
+           <normaloff>icon/search.png</normaloff>icon/search.png</iconset>
+         </attribute>
+         <attribute name="title">
+          <string>Search</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,7">
+            <item>
+             <widget class="QPushButton" name="searchContactButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>icon/search categories.png</normaloff>icon/search categories.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="searchContactBar">
+              <property name="placeholderText">
+               <string>Search</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QListWidget" name="searchContactList"/>
+          </item>
+         </layout>
+        </widget>
         <widget class="QWidget" name="friendTab">
+         <attribute name="icon">
+          <iconset>
+           <normaloff>icon/contact.png</normaloff>icon/contact.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>联系人</string>
          </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="spacing">
+           <number>3</number>
+          </property>
           <item>
            <widget class="QTreeWidget" name="friendTree">
             <property name="minimumSize">
@@ -73,6 +125,10 @@
          </layout>
         </widget>
         <widget class="QWidget" name="groupTab">
+         <attribute name="icon">
+          <iconset>
+           <normaloff>icon/group.png</normaloff>icon/group.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>群组</string>
          </attribute>

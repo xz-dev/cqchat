@@ -25,7 +25,7 @@ class S(BaseHTTPRequestHandler):
         # 获取POST json并写入post_data_list
         post_json = json.loads(post_data.decode('utf-8'))
         post_json['local_unix_time'] = time.time()
-        print(post_json)
+        #  print(post_json)
         post_data_list.append(post_json)
         self._set_response()
         self.wfile.write("POST request for {}".format(

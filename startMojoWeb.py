@@ -1,7 +1,5 @@
 import subprocess
-import time
 import os
-import shutil
 
 
 def stopMojoWebQQ():
@@ -9,7 +7,8 @@ def stopMojoWebQQ():
     阻塞型关闭客户端
     """
     args = ['pidof', 'perl']
-    pid_id = subprocess.check_output(args)
+    proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    pid_id = proc.stdout.read()
     pid_id = str(int(pid_id))
     args = ['kill', pid_id]
     proc = subprocess.Popen(args)
