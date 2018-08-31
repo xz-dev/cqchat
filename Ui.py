@@ -96,7 +96,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
             self.searchContactBarTextEdited)  # 启动搜索功能
         self.searchContactList.doubleClicked.connect(
             self.doubleClickedsearchContactList)
-        self.contactTabWidget.currentChanged.connect(self.clickContactTabWidget)
+        self.contactTabWidget.currentChanged.connect(
+            self.clickContactTabWidget)
         # 获取选中搜索目标的信息
 
     def autoRefreshData(self):
@@ -120,13 +121,13 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
     def clickContactTabWidget(self):
         currentIndex = self.contactTabWidget.currentIndex()
         if currentIndex == 0:
-            self.searchContactBar.setFocus() # 搜索框获得焦点
+            self.searchContactBar.setFocus()  # 搜索框获得焦点
         else:
             self.inputBox.setFocus()  # 文本框获得焦点
 
     def findleContactOnTreeWidget(self):
         """
-        获得联系人列表中可能的选项
+        获得联系人列表中被搜索到的的选项
         """
         chat_object_info_dict = self.chat_object_info_dict
         curremt_chat_treewidget_item = None
@@ -145,7 +146,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                     if tmp_treewidget_item_str in friendTree_widget_dict:
                         if curremt_chat_id == friendTree_widget_dict[tmp_treewidget_item_str]['id']:
                             curremt_chat_treewidget_item = tmp_treewidget_item
-                            self.friendTree.setCurrentItem(curremt_chat_treewidget_item)
+                            self.friendTree.setCurrentItem(
+                                curremt_chat_treewidget_item)
                             self.contactTabWidget.setCurrentIndex(1)
         elif current_chat_type == 'group':
             curremt_chat_treewidget_item_list = self.groupTree.findItems(
@@ -157,7 +159,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                     if tmp_treewidget_item_str in groupTree_widget_dict:
                         if curremt_chat_id == groupTree_widget_dict[tmp_treewidget_item_str]['id']:
                             curremt_chat_treewidget_item = tmp_treewidget_item
-                            self.groupTree.setCurrentItem(curremt_chat_treewidget_item)
+                            self.groupTree.setCurrentItem(
+                                curremt_chat_treewidget_item)
                             self.contactTabWidget.setCurrentIndex(2)
         return curremt_chat_treewidget_item
 
