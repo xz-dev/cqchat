@@ -71,7 +71,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         self.groupTree_widget_dict = dict()
         self.chat_object_info_dict = {'id': None, 'chat_type': None}
         self.friend_info_dict_list = list()
-        self.group_info_list = list()
+        self.group_info_dict_list = list()
         self.search_contact_result_dict = dict()  # 搜索所有联系人结果字典
         # friend_info_list 与 group_info_list只做备份列表用于查看是否有更改
         # TODO: 监控POST以实时调整信息
@@ -121,8 +121,10 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
     def clickContactTabWidget(self):
         currentIndex = self.contactTabWidget.currentIndex()
         if currentIndex == 0:
+            self.sendButton.hide()  # 隐藏发送按钮
             self.searchContactBar.setFocus()  # 搜索框获得焦点
         else:
+            self.sendButton.show()  # 显示发送按钮
             self.inputBox.setFocus()  # 文本框获得焦点
 
     def findleContactOnTreeWidget(self):
@@ -197,10 +199,16 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         """
         self.search_contact_result_dict.clear()
         search_text = self.search_text
+        search_type_list = ['friend', 'group_all']
         friend_info_dict_list = self.friend_info_dict_list
-        search_dict_list = friend_info_dict_list
-        search_result_list = searchInfo.searchContactObject(
-            search_text, search_dict_list)
+        # 获取好友信息
+        group_info_dict_list = self.group_info_dict_list
+        # 获取群组信息
+        search_dict_list = [friend_info_dict_list, group_info_dict_list]
+        # 打包信息
+        Search = searchInfo.SearchInfo(search_text, search_type_list, search_dict_list)
+        search_result_list = Search.searchContactObject()
+        # 搜索
         if search_dict_list:
             for tmp_chat_object_info_dict in search_result_list:
                 search_contact_text = None
@@ -211,6 +219,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                     search_chat_object_name = tmp_chat_object_info_dict['markname']
                 else:
                     search_chat_object_name = tmp_chat_object_info_dict['name']
+                    # 确定显示的昵称
                 for search_text in tmp_search_text_list:
                     if not search_contact_text:
                         search_contact_text = search_chat_object_name
@@ -344,8 +353,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         载入群组列表
         """
         group_info_list = getInfo.getGroupInfo()  # 获取群组信息
-        if self.group_info_list != group_info_list:
-            self.group_info_list = group_info_list
+        if self.group_info_dict_list != group_info_list:
+            self.group_info_dict_list = group_info_list
             for friend_category in ['未分类']:
                 # TODO: 完成本地分类并存储本地功能
                 treecategory = QTreeWidgetItem([friend_category])

@@ -75,7 +75,7 @@
             <item>
              <widget class="QLineEdit" name="searchContactBar">
               <property name="placeholderText">
-               <string>Search</string>
+               <string>搜索联系人</string>
               </property>
               <property name="clearButtonEnabled">
                <bool>true</bool>
@@ -185,7 +185,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="9,1">
+         <layout class="QHBoxLayout" name="sendLayout" stretch="9,0">
           <item>
            <widget class="QTextEdit" name="inputBox">
             <property name="sizePolicy">
@@ -203,7 +203,7 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>16777215</height>
+              <height>30</height>
              </size>
             </property>
             <property name="cursor" stdset="0">
