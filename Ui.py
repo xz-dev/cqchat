@@ -119,6 +119,9 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         # 系统托盘退出菜单
 
     def clickContactTabWidget(self):
+        """
+        点击TAB栏
+        """
         currentIndex = self.contactTabWidget.currentIndex()
         if currentIndex == 0:
             self.sendButton.hide()  # 隐藏发送按钮
@@ -138,7 +141,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         current_chat_name = chat_object_info_dict['chat_info_dict']['markname']
         if not current_chat_name:
             current_chat_name = chat_object_info_dict['chat_info_dict']['name']
-        if current_chat_type == 'friend':
+        if 'friend' in current_chat_type:
             curremt_chat_treewidget_item_list = self.friendTree.findItems(
                 current_chat_name, Qt.MatchExactly | Qt.MatchContains | Qt.MatchRecursive)
             if curremt_chat_treewidget_item_list:
@@ -151,7 +154,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                             self.friendTree.setCurrentItem(
                                 curremt_chat_treewidget_item)
                             self.contactTabWidget.setCurrentIndex(1)
-        elif current_chat_type == 'group':
+        elif 'group' in current_chat_type:
             curremt_chat_treewidget_item_list = self.groupTree.findItems(
                 current_chat_name, Qt.MatchExactly | Qt.MatchContains | Qt.MatchRecursive)
             if curremt_chat_treewidget_item_list:
@@ -206,7 +209,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         # 获取群组信息
         search_dict_list = [friend_info_dict_list, group_info_dict_list]
         # 打包信息
-        Search = searchInfo.SearchInfo(search_text, search_type_list, search_dict_list)
+        Search = searchInfo.SearchInfo(
+            search_text, search_type_list, search_dict_list)
         search_result_list = Search.searchContactObject()
         # 搜索
         if search_dict_list:
@@ -214,11 +218,11 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                 search_contact_text = None
                 search_chat_object_name = None
                 tmp_search_text_list = tmp_chat_object_info_dict['search_text_list']
-                tmp_chat_object_info_dict = tmp_chat_object_info_dict['search_dict']
-                if tmp_chat_object_info_dict['markname']:
-                    search_chat_object_name = tmp_chat_object_info_dict['markname']
+                tmp_chat_object_info = tmp_chat_object_info_dict['search_dict']
+                if tmp_chat_object_info['markname']:
+                    search_chat_object_name = tmp_chat_object_info['markname']
                 else:
-                    search_chat_object_name = tmp_chat_object_info_dict['name']
+                    search_chat_object_name = tmp_chat_object_info['name']
                     # 确定显示的昵称
                 for search_text in tmp_search_text_list:
                     if not search_contact_text:
@@ -228,9 +232,9 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                 newItem = QtWidgets.QListWidgetItem()
                 newItem.setText(search_contact_text)
                 chat_object_info_dict = dict()
-                chat_object_info_dict['id'] = tmp_chat_object_info_dict['id']
-                chat_object_info_dict['chat_type'] = 'friend'
-                chat_object_info_dict['chat_info_dict'] = tmp_chat_object_info_dict
+                chat_object_info_dict['id'] = tmp_chat_object_info['id']
+                chat_object_info_dict['chat_type'] = tmp_chat_object_info_dict['search_type']
+                chat_object_info_dict['chat_info_dict'] = tmp_chat_object_info
                 self.search_contact_result_dict[repr(
                     newItem)] = chat_object_info_dict
                 self.searchContactList.insertItem(0, newItem)
