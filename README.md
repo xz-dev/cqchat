@@ -1,5 +1,6 @@
 # [Mojo-Webqq-Python](https://github.com/XZ-Dev/Mojo-Webqq-Python)
 WebQQ的pyqt5客户端  
+项目重构，暂停更新    
 [基于Mojo-Webqq](https://github.com/sjdy521/Mojo-Webqq)、[PyQt5](https://github.com/baoboa/pyqt5)、[requests](https://github.com/requests/requests)、[fuzzyfinder](https://github.com/amjith/fuzzyfinder) 
 ## 使用方法
 1. 安装Python3库 PyQt5、requests、fuzzyfinder  
