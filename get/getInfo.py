@@ -8,10 +8,13 @@ def getInfo(is_https, host, port, api):
     else:
         transferProtocol = 'http'
     url = transferProtocol + '://' + host + ':' + port + api
-    resp = requests.get(url)
-    resp.encoding = 'utf-8'  # 限定为utf-8编码, 避免乱码
-    info_list = json.loads(resp.text)
-    return info_list
+    try:
+        resp = requests.get(url)
+        resp.encoding = 'utf-8'  # 限定为utf-8编码, 避免乱码
+        info_list = json.loads(resp.text)
+        return info_list
+    except:
+        return None
 
 
 def getGroupInfo(is_https=0, host='127.0.0.1', port='5000', api='/openqq/get_group_info'):

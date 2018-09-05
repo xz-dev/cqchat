@@ -1,31 +1,83 @@
 import multiprocessing as mp
 import os
 import time
-import Ui
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
 
 
-def findQrcode(post_json):
-    if post_json['post_type'] == 'event':
-        if post_json['event'] == 'input_qrcode':
-            return post_json['params'][0]
-        elif post_json['params'] == ['loading', 'scaning']:
-            return True
+class showQrcode():
+    """
+    显示二维码
+    制作QListWidget
+    """
+
+    def __init__(self, post_data_list):
+        self.post_data_list = post_data_list
+        self.tmp_image_list = list()
+        self.qrcode_base64_str = str()
+
+    def getQrcode(self):
+        post_data_list = self.post_data_list
+        if post_data_list:
+            res = []
+            pool = mp.Pool()
+            findBase64Qrcode = self.findBase64Qrcode
+            res = pool.map(findBase64Qrcode, post_data_list)
+            pool.close()
+            pool.join()
+            res = [i for i in res if type(i) is str]
+            qrcode_base64_str = self.qrcode_base64_str
+            if res and qrcode_base64_str != res[0]:
+                post_data_list[:] = []
+                self.qrcode_base64_str = res[0]
+                if not self.tmp_image_list:
+                    tmp_image_list = self.base64ToImage()
+                    self.tmp_image_list = tmp_image_list
+                qrcode_imageItem = self.makeQrcodeQListWidget()
+                return qrcode_imageItem
+            else:
+                return None
+        else:
+            return None
+
+    def findBase64Qrcode(self, post_json):
+        """
+        查询QrCode的base64编码
+        """
+        if post_json['post_type'] == 'event':
+            if post_json['event'] == 'input_qrcode':
+                qrcode_base64 = post_json['params'][1]
+                return qrcode_base64
+            elif post_json['params'] == ['updating', 'running']:
+                return True
+            else:
+                return False
         else:
             return False
-    else:
-        return False
 
+    def base64ToImage(self):
+        """
+        base64转图片
+        """
+        import base64
+        import tempfile
+        base64_str = self.qrcode_base64_str
+        base64_byte = base64_str.encode()
+        tmp_image = tempfile.mkstemp(suffix='.png')
+        tmp_image_name = tmp_image[1]
+        with open(tmp_image_name, 'wb') as img:
+            img.write(base64.decodebytes(base64_byte))
+        return tmp_image
 
-def isStart(post_data_list):
-    pool = mp.Pool()
-    res = []
-    while len(res) != 1:
-        while not res.count(True):
-            res = pool.map(findQrcode, post_data_list)
-        res = [i for i in res if type(i) is str]
-    post_data_list[:] = []
-    Ui.showQrcode(res[0])
-    return True
+    def makeQrcodeQListWidget(self):
+        """
+        创建QrCode QListWidgetItem
+        """
+        qrcode_image = self.tmp_image_list[1]
+        newItem = QtWidgets.QListWidgetItem()
+        newItem.setIcon(QIcon(qrcode_image))
+        os.remove(qrcode_image)
+        return newItem
 
 
 def handleMessageContent(message_unit_time, sender_name, message_content):
@@ -175,4 +227,4 @@ def getMessage(post_data_list, all_message_dict):
 
 
 if __name__ == '__main__':
-    isStart('/tmp/pyqtWebQQ/')
+    getQrcode('/tmp/pyqtWebQQ/')

@@ -2,56 +2,17 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication, QWidget, QSystemTrayIcon, QMenu, QAction, qApp
 from PyQt5 import QtGui, QtWidgets, QtCore
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget, QLabel
 import MainGui
+import TrayIcon
 
 import sendMessage
+import handlePostData
 from get import getInfo
 import searchInfo
-
-#  from PyQt5.QtWidgets import *
-#  from PyQt5.QtCore import *
-#  from PyQt5.QtGui import *
-
-
-class TrayIcon(QSystemTrayIcon):
-    def __init__(self, parent=None):
-        super(TrayIcon, self).__init__(parent)
-        self.showMenu()
-        self.showIcon()
-        self.connectEvent()
-
-    def connectEvent(self):
-        self.activated.connect(self.iconClied)
-        # 把鼠标点击图标的信号和槽连接
-
-    def iconClied(self, reason):
-        "鼠标点击icon传递的信号会带有一个整形的值，1是表示单击右键，2是双击，3是单击左键，4是用鼠标中键点击"
-        if reason == 2 or reason == 3:
-            pw = self.parent()
-            if pw.isVisible():
-                pw.hide()
-            else:
-                pw.show()
-
-    def showMenu(self):
-        self.menu = QMenu()
-        self.quitAction = QAction("退出", self, triggered=self.quit)
-        self.menu.addAction(self.quitAction)
-        self.setContextMenu(self.menu)
-
-    def showIcon(self):
-        self.setIcon(QIcon("./icon/tray_icon.png"))
-        self.icon = self.MessageIcon()
-
-    def quit(self):
-        "保险起见，为了完整的退出"
-        self.setVisible(False)
-        self.parent().close()
-        qApp.quit()
-        sys.exit()
+from TrayIcon import TrayIcon
 
 
 class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
@@ -59,29 +20,33 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
     显示主页面
     """
 
-    def __init__(self, all_message_dict, parent=None):
-        super().__init__()
-        # 系统托盘图标
+    def __init__(self, all_message_dict, post_data_list, parent=None):
+        self.showQrcode = handlePostData.showQrcode(post_data_list)
         super(MainPage, self).__init__(parent)
         self.ti = TrayIcon(self)
         self.ti.show()
+        # 系统托盘图标
+        super().__init__()
         self.all_message_dict = all_message_dict
-        self.loaded_message_info_dict = dict()
-        self.friendTree_widget_dict = dict()
-        self.groupTree_widget_dict = dict()
+        self.post_data_list = post_data_list
+        self.is_start = False
+        self.is_stop = False
+        self.status_dict = {
+            'is_start': False,
+            'is_stop': False,
+        }
+        # TODO: 监控POST以实时调整信息
+        self.loaded_message_info_dict = dict()  # 已加载的消息列表
+        self.friendTree_widget_dict = dict()  # 好友列表数据
+        self.groupTree_widget_dict = dict()  # 群组列表数据
         self.chat_object_info_dict = {'id': None, 'chat_type': None}
+        # 当前的聊天对象
         self.friend_info_dict_list = list()
         self.group_info_dict_list = list()
-        self.search_contact_result_dict = dict()  # 搜索所有联系人结果字典
         # friend_info_list 与 group_info_list只做备份列表用于查看是否有更改
-        # TODO: 监控POST以实时调整信息
+        self.search_contact_result_dict = dict()  # 搜索所有联系人结果字典
         self.setupUi(self)
-        self.loadFriendTree()  # 绘出好友列表
-        self.loadGroupTree()  # 绘出群组列表
-        #  self.timer.timeout.connect(self.loadFriendTree)
-        #  self.timer.start(300000)  # 每五分钟刷新一次联系人
         self.autoRefreshData()
-        # TODO: 整合所有定时刷新函数
         self.connectEvent()
 
     def connectEvent(self):
@@ -105,11 +70,15 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         定时刷新数据
         """
         self.timer1 = QtCore.QTimer(self)
-        self.timer1.timeout.connect(self.loadMessageList)
-        self.timer1.start(50)
+        self.timer1.timeout.connect(self.loadFriendTree)  # 绘出好友列表
         self.timer2 = QtCore.QTimer(self)
-        self.timer2.timeout.connect(self.messageNotification)
-        self.timer2.start(50)
+        self.timer1.timeout.connect(self.loadGroupTree)  # 绘出群组列表
+        self.timer3 = QtCore.QTimer(self)
+        self.timer3.timeout.connect(self.loadMessageList)
+        self.timer3.start(50)
+        self.timer4 = QtCore.QTimer(self)
+        self.timer4.timeout.connect(self.messageNotification)
+        self.timer4.start(50)
 
     def trayMenu(self):
         """
@@ -120,7 +89,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
 
     def clickContactTabWidget(self):
         """
-        点击TAB栏
+        点击TAB栏切换界面
         """
         currentIndex = self.contactTabWidget.currentIndex()
         if currentIndex == 0:
@@ -130,46 +99,10 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
             self.sendButton.show()  # 显示发送按钮
             self.inputBox.setFocus()  # 文本框获得焦点
 
-    def findleContactOnTreeWidget(self):
-        """
-        获得联系人列表中被搜索到的的选项
-        """
-        chat_object_info_dict = self.chat_object_info_dict
-        curremt_chat_treewidget_item = None
-        curremt_chat_id = chat_object_info_dict['id']
-        current_chat_type = chat_object_info_dict['chat_type']
-        current_chat_name = chat_object_info_dict['chat_info_dict']['markname']
-        if not current_chat_name:
-            current_chat_name = chat_object_info_dict['chat_info_dict']['name']
-        if 'friend' in current_chat_type:
-            curremt_chat_treewidget_item_list = self.friendTree.findItems(
-                current_chat_name, Qt.MatchExactly | Qt.MatchContains | Qt.MatchRecursive)
-            if curremt_chat_treewidget_item_list:
-                for tmp_treewidget_item in curremt_chat_treewidget_item_list:
-                    tmp_treewidget_item_str = repr(tmp_treewidget_item)
-                    friendTree_widget_dict = self.friendTree_widget_dict
-                    if tmp_treewidget_item_str in friendTree_widget_dict:
-                        if curremt_chat_id == friendTree_widget_dict[tmp_treewidget_item_str]['id']:
-                            curremt_chat_treewidget_item = tmp_treewidget_item
-                            self.friendTree.setCurrentItem(
-                                curremt_chat_treewidget_item)
-                            self.contactTabWidget.setCurrentIndex(1)
-        elif 'group' in current_chat_type:
-            curremt_chat_treewidget_item_list = self.groupTree.findItems(
-                current_chat_name, Qt.MatchExactly | Qt.MatchContains | Qt.MatchRecursive)
-            if curremt_chat_treewidget_item_list:
-                for tmp_treewidget_item in curremt_chat_treewidget_item_list:
-                    tmp_treewidget_item_str = repr(tmp_treewidget_item)
-                    groupTree_widget_dict = self.groupTree_widget_dict
-                    if tmp_treewidget_item_str in groupTree_widget_dict:
-                        if curremt_chat_id == groupTree_widget_dict[tmp_treewidget_item_str]['id']:
-                            curremt_chat_treewidget_item = tmp_treewidget_item
-                            self.groupTree.setCurrentItem(
-                                curremt_chat_treewidget_item)
-                            self.contactTabWidget.setCurrentIndex(2)
-        return curremt_chat_treewidget_item
-
     def doubleClickedsearchContactList(self):
+        """
+        双击搜素结果
+        """
         self.getSelectedSearchContactList()
         self.findleContactOnTreeWidget()
 
@@ -187,7 +120,53 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                 self.loaded_message_info_dict.clear()
                 self.messageList.clear()
 
+    def findleContactOnTreeWidget(self):
+        """
+        获得联系人列表中被搜索到的的选项
+        """
+        import handleUiData
+        chat_object_info_dict = self.chat_object_info_dict
+        current_chat_treewidget_item = None
+        current_chat_id = chat_object_info_dict['id']
+        current_chat_type = chat_object_info_dict['chat_type']
+        current_chat_name = chat_object_info_dict['chat_info_dict']['markname']
+        if not current_chat_name:
+            current_chat_name = chat_object_info_dict['chat_info_dict']['name']
+        if 'friend' in current_chat_type:
+            current_chat_treewidget_item = handleUiData.getSelectedSearchTerm(
+                current_chat_id, current_chat_name, self.friendTree
+            )
+            self.friendTree.setCurrentItem(
+                curremt_chat_treewidget_item)
+            self.contactTabWidget.setCurrentIndex(1)
+        # 朋友
+        elif 'group' in current_chat_type:
+            current_chat_treewidget_item = handleUiData.getSelectedSearchTerm(
+                current_chat_id, current_chat_name, self.groupTree
+            )
+            self.groupTree.setCurrentItem(
+                curremt_chat_treewidget_item)
+            self.contactTabWidget.setCurrentIndex(2)
+        # 群组
+        return current_chat_treewidget_item
+
+    def getSelectedSearchTerm(self, current_chat_id, current_chat_name, currcontactTreeWidget):
+        current_chat_treewidget_item = None
+        current_chat_treewidget_item_list = currcontactTreeWidget.findItems(
+            current_chat_name, Qt.MatchExactly | Qt.MatchContains | Qt.MatchRecursive)
+        if current_chat_treewidget_item_list:
+            for tmp_treewidget_item in current_chat_treewidget_item_list:
+                tmp_treewidget_item_str = repr(tmp_treewidget_item)
+                friendTree_widget_dict = self.friendTree_widget_dict
+                if tmp_treewidget_item_str in friendTree_widget_dict:
+                    if current_chat_id == friendTree_widget_dict[tmp_treewidget_item_str]['id']:
+                        current_chat_treewidget_item = tmp_treewidget_item
+        return current_chat_treewidget_item
+
     def searchContactBarTextEdited(self):
+        """
+        去除搜索词汇中的空格
+        """
         import re
         self.searchContactList.clear()
         search_text = self.searchContactBar.text()
@@ -200,6 +179,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         """
         搜索所有联系人(包括好友, 群组)
         """
+        import handleUiData
         self.search_contact_result_dict.clear()
         search_text = self.search_text
         search_type_list = ['friend', 'group_all']
@@ -215,29 +195,22 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         # 搜索
         if search_dict_list:
             for tmp_chat_object_info_dict in search_result_list:
-                search_contact_text = None
-                search_chat_object_name = None
-                tmp_search_text_list = tmp_chat_object_info_dict['search_text_list']
-                tmp_chat_object_info = tmp_chat_object_info_dict['search_dict']
-                if tmp_chat_object_info['markname']:
-                    search_chat_object_name = tmp_chat_object_info['markname']
-                else:
-                    search_chat_object_name = tmp_chat_object_info['name']
-                    # 确定显示的昵称
-                for search_text in tmp_search_text_list:
-                    if not search_contact_text:
-                        search_contact_text = search_chat_object_name
-                    if search_text != search_chat_object_name:
-                        search_contact_text = search_contact_text + '\n' + search_text
-                newItem = QtWidgets.QListWidgetItem()
-                newItem.setText(search_contact_text)
-                chat_object_info_dict = dict()
-                chat_object_info_dict['id'] = tmp_chat_object_info['id']
-                chat_object_info_dict['chat_type'] = tmp_chat_object_info_dict['search_type']
-                chat_object_info_dict['chat_info_dict'] = tmp_chat_object_info
+                newItem, chat_object_info_dict = handleUiData.handleSearchOutput(
+                    tmp_chat_object_info_dict, is_child=False)
                 self.search_contact_result_dict[repr(
                     newItem)] = chat_object_info_dict
                 self.searchContactList.insertItem(0, newItem)
+                # 显示群组基本信息
+                if tmp_chat_object_info_dict['search_group_nember_dict_list']:
+                    search_result_list = tmp_chat_object_info_dict['search_group_nember_dict_list']
+                    for tmp_chat_object_info_dict in search_result_list:
+                        newItem, chat_object_info_dict = handleUiData.handleSearchOutput(
+                            tmp_chat_object_info_dict, is_child=True)
+                        self.search_contact_result_dict[repr(
+                            newItem)] = chat_object_info_dict
+                        self.searchContactList.insertItem(0, newItem)
+                        # 显示组员信息
+        # 显示
 
     def messageNotification(self):
         """
@@ -321,7 +294,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         载入好友列表
         """
         friend_info_list = getInfo.getFriendInfo()  # 获取好友列表
-        if self.friend_info_dict_list != friend_info_list:
+        if friend_info_list and self.friend_info_dict_list != friend_info_list:
             self.friend_info_dict_list = friend_info_list
             friend_category_list = list(
                 set([tmp_dict['category'] for tmp_dict in friend_info_list]))
@@ -357,7 +330,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         载入群组列表
         """
         group_info_list = getInfo.getGroupInfo()  # 获取群组信息
-        if self.group_info_dict_list != group_info_list:
+        if group_info_list and self.group_info_dict_list != group_info_list:
             self.group_info_dict_list = group_info_list
             for friend_category in ['未分类']:
                 # TODO: 完成本地分类并存储本地功能
@@ -395,6 +368,14 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                             newMessage)] = single_message_dict
                         self.messageList.addItem(newMessage)
                         self.messageList.scrollToBottom()
+        else:
+            post_data_list = self.post_data_list
+            showQrcode = self.showQrcode
+            qrcode_imageItem = showQrcode.getQrcode()
+            if qrcode_imageItem:
+                self.messageList.setIconSize(QSize(200, 200))
+                self.messageList.addItem(qrcode_imageItem)
+                self.messageList.scrollToBottom()
 
     def getSendText(self):
         """
@@ -421,51 +402,10 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                 sendMessage.sendGroupMessage(receiver_id, send_text)
 
 
-class ShowImage(QWidget):
-    """
-    显示二维码
-    """
-
-    def __init__(self, image_path):
-        super().__init__()
-        self.image_path = image_path
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.autoClose)
-        self.timer.start(100)
-        self.title = 'QrCode'
-        self.left = 10
-        self.top = 10
-        self.width = 640
-        self.height = 480
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
-
-        # Create widget
-        label = QLabel(self)
-        pixmap = QtGui.QPixmap(self.image_path)
-        label.setPixmap(pixmap)
-        self.resize(pixmap.width(), pixmap.height())
-
-        self.show()
-
-    def autoClose(self):
-        if not os.path.exists(self.image_path):
-            self.close()
-
-
-def main(friend_message_dict):
+def main(friend_message_dict, post_data_list):
     app = QtWidgets.QApplication(sys.argv)
-    ui = MainPage(friend_message_dict)
+    ui = MainPage(friend_message_dict, post_data_list)
     ui.show()
-    sys.exit(app.exec_())
-
-
-def showQrcode(image_path):
-    app = QApplication(sys.argv)
-    ex = ShowImage(image_path)
     sys.exit(app.exec_())
 
 
