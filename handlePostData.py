@@ -18,6 +18,7 @@ class showQrcode():
 
     def getQrcode(self):
         post_data_list = self.post_data_list
+        qrcode_imageItem = None
         if post_data_list:
             res = []
             pool = mp.Pool()
@@ -27,18 +28,13 @@ class showQrcode():
             pool.join()
             res = [i for i in res if type(i) is str]
             qrcode_base64_str = self.qrcode_base64_str
-            if res and qrcode_base64_str != res[0]:
+            if res:
                 post_data_list[:] = []
                 self.qrcode_base64_str = res[0]
-                if not self.tmp_image_list:
-                    tmp_image_list = self.base64ToImage()
-                    self.tmp_image_list = tmp_image_list
+                tmp_image_list = self.base64ToImage()
+                self.tmp_image_list = tmp_image_list
                 qrcode_imageItem = self.makeQrcodeQListWidget()
-                return qrcode_imageItem
-            else:
-                return None
-        else:
-            return None
+        return qrcode_imageItem
 
     def findBase64Qrcode(self, post_json):
         """

@@ -153,19 +153,32 @@
        <layout class="QVBoxLayout" name="verticalLayout" stretch="19,1">
         <item>
          <widget class="QTabWidget" name="chatTabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
           <property name="tabsClosable">
            <bool>true</bool>
           </property>
           <property name="tabBarAutoHide">
            <bool>false</bool>
           </property>
-          <widget class="QWidget" name="tab">
+          <widget class="QWidget" name="tab_0">
+           <attribute name="title">
+            <string>Status</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QListWidget" name="statusListWidget"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_1">
            <attribute name="title">
             <string>Tab 1</string>
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QListWidget" name="messageList">
+             <widget class="QListWidget" name="messageListWidget">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>

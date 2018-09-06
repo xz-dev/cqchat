@@ -10,6 +10,7 @@ import TrayIcon
 
 import sendMessage
 import handlePostData
+import handleMojoStatusLog
 from get import getInfo
 import searchInfo
 from TrayIcon import TrayIcon
@@ -79,6 +80,9 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         self.timer4 = QtCore.QTimer(self)
         self.timer4.timeout.connect(self.messageNotification)
         self.timer4.start(50)
+        self.timer5 = QtCore.QTimer(self)
+        self.timer5.timeout.connect(self.loadStatusTextEdit)
+        self.timer5.start(100)
 
     def trayMenu(self):
         """
@@ -86,6 +90,26 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         """
         self.quitAction = QAction("退出", self, triggered=self.quit)
         # 系统托盘退出菜单
+
+    def loadStatusTextEdit(self):
+        """
+        加载mojo后端状态框
+        """
+        mojo_log_file = 'nohup.out'
+        mojo_log_list = handleMojoStatusLog.readMojoLog(mojo_log_file)
+        if mojo_log_list:
+            for mojo_log in mojo_log_list:
+                newItem = QtWidgets.QListWidgetItem()
+                newItem.setText(mojo_log)
+                self.statusListWidget.addItem(newItem)
+                self.statusListWidget.scrollToBottom()
+        post_data_list = self.post_data_list
+        showQrcode = self.showQrcode
+        qrcode_imageItem = showQrcode.getQrcode()
+        if qrcode_imageItem:
+            self.statusListWidget.setIconSize(QSize(200, 200))
+            self.statusListWidget.addItem(qrcode_imageItem)
+            self.statusListWidget.scrollToBottom()
 
     def clickContactTabWidget(self):
         """
@@ -216,7 +240,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         """
         显示系统级消息提醒
         """
-        if 'message_notification_list' in self.all_message_dict:
+        if self.all_message_dict and 'message_notification_list' in self.all_message_dict:
             message_notification_list = self.all_message_dict['message_notification_list']
             del self.all_message_dict['message_notification_list']
             chat_object_info_dict = self.chat_object_info_dict
@@ -366,16 +390,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
                         newMessage.setText(message_content)
                         self.loaded_message_info_dict[repr(
                             newMessage)] = single_message_dict
-                        self.messageList.addItem(newMessage)
-                        self.messageList.scrollToBottom()
-        else:
-            post_data_list = self.post_data_list
-            showQrcode = self.showQrcode
-            qrcode_imageItem = showQrcode.getQrcode()
-            if qrcode_imageItem:
-                self.messageList.setIconSize(QSize(200, 200))
-                self.messageList.addItem(qrcode_imageItem)
-                self.messageList.scrollToBottom()
+                        self.messageListWidget.addItem(newMessage)
+                        self.messageListWidget.scrollToBottom()
 
     def getSendText(self):
         """
