@@ -19,7 +19,7 @@ if __name__ == '__main__':
         webqq_server = mp.Process(
             target=startMojoWeb.startMojoWebQQ,
             args=(mojo_webqq_config_path,))
-        # 消息处理
+        # POST信息处理
         handle_friend_message = mp.Process(
             target=handlePostData.getMessage,
             args=(POST_data, all_message_dict))

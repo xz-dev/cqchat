@@ -27,3 +27,9 @@ def getFriendInfo(is_https=0, host='127.0.0.1', port='5000', api='/openqq/get_fr
     friend_info_list = getInfo(
         is_https=is_https, host=host, port=port, api=api)
     return friend_info_list
+
+
+def getMojoStatus(is_https=0, host='127.0.0.1', port='5000', api='openqq/get_client_info'):
+    mojoStatus = getInfo(
+        is_https=is_https, host=host, port=port, api=api)
+    return mojoStatus

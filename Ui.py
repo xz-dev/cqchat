@@ -10,10 +10,11 @@ import TrayIcon
 
 import sendMessage
 import handlePostData
-import handleMojoStatusLog
 from get import getInfo
 import searchInfo
 from TrayIcon import TrayIcon
+import preloadUiData
+import mojoStatus
 
 
 class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
@@ -22,7 +23,6 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
     """
 
     def __init__(self, all_message_dict, post_data_list, parent=None):
-        self.showQrcode = handlePostData.showQrcode(post_data_list)
         super(MainPage, self).__init__(parent)
         self.ti = TrayIcon(self)
         self.ti.show()
@@ -33,8 +33,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         self.is_start = False
         self.is_stop = False
         self.status_dict = {
-            'is_start': False,
-            'is_stop': False,
+            'login': False,
+            'stop': False,
         }
         # TODO: 监控POST以实时调整信息
         self.loaded_message_info_dict = dict()  # 已加载的消息列表
@@ -49,6 +49,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         self.setupUi(self)
         self.autoRefreshData()
         self.connectEvent()
+        self.mojoStatus = mojoStatus.mojoStatus(self.statusListWidget, self.post_data_list)
 
     def connectEvent(self):
         """
@@ -70,19 +71,24 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         """
         定时刷新数据
         """
-        self.timer1 = QtCore.QTimer(self)
-        self.timer1.timeout.connect(self.loadFriendTree)  # 绘出好友列表
-        self.timer2 = QtCore.QTimer(self)
-        self.timer1.timeout.connect(self.loadGroupTree)  # 绘出群组列表
-        self.timer3 = QtCore.QTimer(self)
-        self.timer3.timeout.connect(self.loadMessageList)
-        self.timer3.start(50)
-        self.timer4 = QtCore.QTimer(self)
-        self.timer4.timeout.connect(self.messageNotification)
-        self.timer4.start(50)
+        #  self.timer1 = QtCore.QTimer(self)
+        #  self.timer1.timeout.connect(self.loadFriendTree)  # 绘出好友列表
+        #  self.timer1.start(50)
+        #  self.timer2 = QtCore.QTimer(self)
+        #  self.timer2.timeout.connect(self.loadGroupTree)  # 绘出群组列表
+        #  self.timer2.start(50)
+        #  self.timer3 = QtCore.QTimer(self)
+        #  self.timer3.timeout.connect(self.loadMessageList)
+        #  self.timer3.start(50)
+        #  self.timer4 = QtCore.QTimer(self)
+        #  self.timer4.timeout.connect(self.messageNotification)
+        #  self.timer4.start(50)
         self.timer5 = QtCore.QTimer(self)
         self.timer5.timeout.connect(self.loadStatusTextEdit)
         self.timer5.start(100)
+        self.timer6 = QtCore.QTimer(self)
+        self.timer6.timeout.connect(self.loadStatusTextEdit)
+        self.timer6.start(100)
 
     def trayMenu(self):
         """
@@ -95,21 +101,8 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         """
         加载mojo后端状态框
         """
-        mojo_log_file = 'nohup.out'
-        mojo_log_list = handleMojoStatusLog.readMojoLog(mojo_log_file)
-        if mojo_log_list:
-            for mojo_log in mojo_log_list:
-                newItem = QtWidgets.QListWidgetItem()
-                newItem.setText(mojo_log)
-                self.statusListWidget.addItem(newItem)
-                self.statusListWidget.scrollToBottom()
-        post_data_list = self.post_data_list
-        showQrcode = self.showQrcode
-        qrcode_imageItem = showQrcode.getQrcode()
-        if qrcode_imageItem:
-            self.statusListWidget.setIconSize(QSize(200, 200))
-            self.statusListWidget.addItem(qrcode_imageItem)
-            self.statusListWidget.scrollToBottom()
+        self.mojoStatus.refreshMojoStatusWidget()
+        self.statusListWidget = self.mojoStatus.ListWidget
 
     def clickContactTabWidget(self):
         """

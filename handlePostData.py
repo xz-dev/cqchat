@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
 
 
-class showQrcode():
+class QrCode():
     """
     显示二维码
     制作QListWidget
@@ -16,7 +16,7 @@ class showQrcode():
         self.tmp_image_list = list()
         self.qrcode_base64_str = str()
 
-    def getQrcode(self):
+    def qrcodeListItem(self):
         post_data_list = self.post_data_list
         qrcode_imageItem = None
         if post_data_list:
@@ -33,7 +33,7 @@ class showQrcode():
                 self.qrcode_base64_str = res[0]
                 tmp_image_list = self.base64ToImage()
                 self.tmp_image_list = tmp_image_list
-                qrcode_imageItem = self.makeQrcodeQListWidget()
+                qrcode_imageItem = self.makeQrcodeListItem()
         return qrcode_imageItem
 
     def findBase64Qrcode(self, post_json):
@@ -65,7 +65,7 @@ class showQrcode():
             img.write(base64.decodebytes(base64_byte))
         return tmp_image
 
-    def makeQrcodeQListWidget(self):
+    def makeQrcodeListItem(self):
         """
         创建QrCode QListWidgetItem
         """
@@ -77,6 +77,9 @@ class showQrcode():
 
 
 def handleMessageContent(message_unit_time, sender_name, message_content):
+    """
+    格式化消息信息
+    """
     if message_unit_time and sender_name and message_content:
         message_time = time.strftime(
             "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
@@ -88,6 +91,9 @@ def handleMessageContent(message_unit_time, sender_name, message_content):
 
 
 def findMessage(post_json):
+    """
+    寻找消息并分类
+    """
     if post_json['post_type'] != 'event':
         message_id = None
         sender_id = None
@@ -168,6 +174,9 @@ def addMessageNotification(single_message_dict, all_message_dict):
 
 
 def removeRecordedManssage(message_id, post_data_list):
+    """
+    从POST数据中移除已处理消息
+    """
     for post_json in post_data_list:
         if 'id' in post_json and post_json['id'] == message_id:
             post_data_list.remove(post_json)
@@ -220,7 +229,5 @@ def getMessage(post_data_list, all_message_dict):
                 time.sleep(0.2)
         else:
             time.sleep(0.2)
-
-
-if __name__ == '__main__':
-    getQrcode('/tmp/pyqtWebQQ/')
+#  def run(post_data_list, all_message_dict):
+#

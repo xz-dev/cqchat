@@ -1,3 +1,4 @@
+import sys
 from PyQt5.QtWidgets import QSystemTrayIcon, QMenu, QAction, qApp
 from PyQt5.QtGui import QIcon
 

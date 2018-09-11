@@ -1,4 +1,4 @@
-def readMojoLog(log_file):
+def readlines(log_file):
     """
     读取mojo log文件
     """
