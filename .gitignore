@@ -127,3 +127,5 @@ pip-selfcheck.json
 # nohup文件
 nohup.out
 
+# IDEA
+.idea

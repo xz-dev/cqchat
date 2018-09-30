@@ -71,24 +71,73 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow, QSystemTrayIcon):
         """
         定时刷新数据
         """
-        #  self.timer1 = QtCore.QTimer(self)
-        #  self.timer1.timeout.connect(self.loadFriendTree)  # 绘出好友列表
-        #  self.timer1.start(50)
-        #  self.timer2 = QtCore.QTimer(self)
-        #  self.timer2.timeout.connect(self.loadGroupTree)  # 绘出群组列表
-        #  self.timer2.start(50)
-        #  self.timer3 = QtCore.QTimer(self)
-        #  self.timer3.timeout.connect(self.loadMessageList)
-        #  self.timer3.start(50)
-        #  self.timer4 = QtCore.QTimer(self)
-        #  self.timer4.timeout.connect(self.messageNotification)
-        #  self.timer4.start(50)
-        self.timer5 = QtCore.QTimer(self)
-        self.timer5.timeout.connect(self.loadStatusTextEdit)
-        self.timer5.start(100)
-        self.timer6 = QtCore.QTimer(self)
-        self.timer6.timeout.connect(self.loadStatusTextEdit)
-        self.timer6.start(100)
+        self.foundAutoRefreshDataEvent()
+        self.checkLogin()
+        self.startAutoRefreshDataEvent()
+
+    def foundAutoRefreshDataEvent(self):
+        """
+        创建定时器对象
+        """
+        self.timer_list = list()
+        self.loadStatusTextEditTimer = QtCore.QTimer(self)
+        self.loadStatusTextEditTimer.timeout.connect(self.loadStatusTextEdit)
+        self.timer_list.append(self.loadStatusTextEditTimer)
+        self.checkLoginTimer = QtCore.QTimer(self)
+        self.checkLoginTimer.timeout.connect(self.checkLogin)
+        self.timer_list.append(self.checkLoginTimer)
+        self.loadFriendTreeTimer = QtCore.QTimer(self)
+        self.loadFriendTreeTimer.timeout.connect(self.loadFriendTree)  # 绘出好友列表
+        self.timer_list.append(self.loadFriendTreeTimer)
+        self.loadGroupTreeTimer = QtCore.QTimer(self)
+        self.loadGroupTreeTimer.timeout.connect(self.loadGroupTree)  # 绘出群组列表
+        self.timer_list.append(self.loadGroupTreeTimer)
+        self.loadMessageListTimer = QtCore.QTimer(self)
+        self.loadMessageListTimer.timeout.connect(self.loadMessageList)
+        self.timer_list.append(self.loadMessageListTimer)
+        self.messageNotificationTimer = QtCore.QTimer(self)
+        self.messageNotificationTimer.timeout.connect(self.messageNotification)
+        self.timer_list.append(self.messageNotificationTimer)
+
+    def startAutoRefreshDataEvent(self):
+        """
+        启动定时器
+        """
+        try:
+            self.loadStatusTextEditTimer.start(100)
+        except:
+            pass
+        if self.status_dict['login']:
+            try:
+                self.checkLoginTimer.start(5000)
+                self.loadFriendTreeTimer.start(50)
+                self.loadGroupTreeTimer.start(50)
+                self.loadMessageListTimer.start(50)
+                self.messageNotificationTimer.start(50)
+            except:
+                pass
+        else:
+            try:
+                self.checkLoginTimer.stop()
+                self.loadFriendTreeTimer.stop()
+                self.loadGroupTreeTimer.stop()
+                self.loadMessageListTimer.stop()
+                self.messageNotificationTimer.stop()
+                self.checkLoginTimer = QtCore.QTimer(self)
+                self.checkLoginTimer.timeout.connect(self.checkLogin)
+                self.checkLoginTimer.start(100)
+            except:
+                pass
+
+    def checkLogin(self):
+        login_status = self.status_dict['login']
+        mojo_status_dict = getInfo.getMojoStatus()
+        if mojo_status_dict and mojo_status_dict['status'] == 'success':
+            login_status = True
+            self.checkLoginTimer.stop()
+            self.checkLoginTimer.start(5000)
+        else:
+            login_status = False
 
     def trayMenu(self):
         """

@@ -27,9 +27,8 @@ class QrCode():
             pool.close()
             pool.join()
             res = [i for i in res if type(i) is str]
-            qrcode_base64_str = self.qrcode_base64_str
+            post_data_list[:] = []
             if res:
-                post_data_list[:] = []
                 self.qrcode_base64_str = res[0]
                 tmp_image_list = self.base64ToImage()
                 self.tmp_image_list = tmp_image_list
@@ -229,5 +228,6 @@ def getMessage(post_data_list, all_message_dict):
                 time.sleep(0.2)
         else:
             time.sleep(0.2)
-#  def run(post_data_list, all_message_dict):
+#  def sortPostMessage(post_json):
+#      if post_json['post_type'] == 'event'
 #
