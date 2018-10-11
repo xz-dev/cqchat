@@ -36,13 +36,13 @@ class BaseDict():
         return res
 
     def add(self, key, value):
-        chat_record = self.chat_record
-        if key in chat_record:
-            tmp_list = chat_record[key]
+        data = self.data
+        if key in data:
+            tmp_list = data[key]
             tmp_list.append(value)
-            chat_record[key] = tmp_list
+            data[key] = tmp_list
         else:
-            chat_record[key] = [value, ]
+            data[key] = [value, ]
 
 
 class PostData(BaseDict):
@@ -55,6 +55,10 @@ class PostData(BaseDict):
 
 class ChatRecord(BaseDict):
     """聊天记录字典
+    chat_record['sender_id'] = [
+            <first message dict>,
+            <second message dict>,
+            ...]
     """
 
     def __init__(self, manager):

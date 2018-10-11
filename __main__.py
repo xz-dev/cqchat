@@ -20,10 +20,10 @@ if __name__ == '__main__':
             target=PostServer.run, args=(Data.post_data.data, ))
         post_handle = mp.Process(
             target=HandlePostData.run, args=(Data, ))
-        post_server.start()
         post_handle.start()
-        post_handle.join()
+        post_server.start()
         post_server.join()
+        post_handle.join()
         #  # mojo-webqq服务器
         #  webqq_server = mp.Process(
         #      target=startMojoWeb.startMojoWebQQ,

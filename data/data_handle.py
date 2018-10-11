@@ -9,9 +9,16 @@ class HandlePostData():
         pass
 
     def run(self, Data):
-        self.__data = Data
-        while True:
-            self.__sort_post_data()
+        try:
+            self.__data = Data
+            while True:
+                s = self.__data.chat_record.data
+                self.__sort_post_data()
+                #  if s != self.__data.chat_record.data:
+                #      print("=========")
+                #      print(self.__data.chat_record.data)
+        except KeyboardInterrupt:
+            pass
 
     def __sort_post_data(self):
         """
@@ -29,51 +36,43 @@ class HandlePostData():
             }, ...]
         """
         post_data = self.__data.post_data
-        chat_record = self.__data.chat_record
-        while post_data != False:
-            if len(post_data.data):
-                message_dict_list = list()
-                with mp.Pool() as pool:
-                    message_dict_list = pool.map(
-                        self._find_message, range(len(post_data.data)))
-                message_dict_list = [i for i in message_dict_list if i != None]
-                if len(message_dict_list):
-                    print(message_dict_list)
-                    for single_message_list in message_dict_list:
-                        numbering = single_message_list[0]
-                        message_data = single_message_list[1]
-                        del(post_data.data[numbering])
-                        self.__add_chat_record(message_data)
-                        if message_data['group_id']:
-                            sender_id = message_data['group_id']
-                        else:
-                            sender_id = message_data['sender_id']
-                        if sender_id in chat_record:
-                            tmp_list = chat_record[sender_id]
-                            # 确保列表顺序按时间顺序
-                            message_dict_last_message_unit_time = tmp_list[-1]['message_unit_time']
-                            message_unit_time = message_data['message_unit_time']
-                            if message_dict_last_message_unit_time <= message_unit_time:
-                                tmp_list.append(message_data)
-                            else:
-                                tmp_list.insert(-1, message_data)
-                            chat_record.add(sender_id, tmp_list)
-                            #  chat_record[sender_id] = tmp_list
-                        else:
-                            chat_record.add(tmp_list, message_data)
-                            #  tmp_list = [message_data]
-                            #  chat_record[sender_id] = tmp_list
-                else:
-                    time.sleep(0.2)
+        if len(post_data.data):
+            message_dict_list = list()
+            with mp.Pool() as pool:
+                message_dict_list = pool.map(
+                    self._find_message, range(len(post_data.data)))
+            message_dict_list = [i for i in message_dict_list if i != None]
+            if len(message_dict_list):
+                for single_message_list in message_dict_list:
+                    numbering = single_message_list[0]
+                    message_data = single_message_list[1]
+                    self.__add_chat_record(message_data)
             else:
                 time.sleep(0.2)
+        else:
+            time.sleep(0.2)
 
-    def __add_chat_record(self, single_message_dict):
-        chat_record = self.__data.chat_record
+    def __add_chat_record(self, message_data):
+        chat_record = self.__data.chat_record.data
         try:
-            chat_object_id = single_message_dict['sender_id']
-            chat_record.add(chat_object_id, single_message_dict)
-        except:
+            if message_data['group_id']:
+                sender_id = message_data['group_id']
+            else:
+                sender_id = message_data['sender_id']
+            if sender_id in chat_record:
+                tmp_list = chat_record[sender_id]
+                # 确保列表顺序按时间顺序
+                last_message_unit_time = tmp_list[-1]['message_unit_time']
+                message_unit_time = message_data['message_unit_time']
+                if last_message_unit_time <= message_unit_time:
+                    tmp_list.append(message_data)
+                else:
+                    tmp_list.insert(-1, message_data)
+                chat_record[sender_id] =  tmp_list
+            else:
+                chat_record[sender_id] = [message_data, ]
+            del(post_data.data[numbering])
+        except TypeError:
             pass
 
     def _find_message(self, numbering):
@@ -81,7 +80,7 @@ class HandlePostData():
         寻找消息并分类
         """
         post_json = self.__data.post_data.data[numbering]
-        print(post_json)
+        #  print(post_json)
         if post_json['post_type'] != 'event':
             message_id = None
             sender_id = None

@@ -25,7 +25,11 @@ class _S(BaseHTTPRequestHandler):
         post_json['local_unix_time'] = time.time()
         print(post_json)
         global _post_data_dict
-        _post_data_dict[len(_post_data_dict)] = post_json
+        try:
+            _post_data_dict[list(_post_data_dict.keys())[-1] + 1] = post_json
+        except IndexError:
+            _post_data_dict[len(_post_data_dict)] = post_json
+        print(_post_data_dict.keys())
         self._set_response()
         self.wfile.write("POST request for {}".format(
             self.path).encode('utf-8'))
