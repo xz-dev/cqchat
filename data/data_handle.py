@@ -68,7 +68,7 @@ class HandlePostData():
                     tmp_list.append(message_data)
                 else:
                     tmp_list.insert(-1, message_data)
-                chat_record[sender_id] =  tmp_list
+                chat_record[sender_id] = tmp_list
             else:
                 chat_record[sender_id] = [message_data, ]
             del(post_data.data[numbering])
@@ -145,23 +145,15 @@ class HandlePostData():
         tray_message = self.tray_message
         tray_message.append(single_message_dict)
 
-    #  def remove_manssage(self, message_id, post_data_list):
+    #  def handle_message_content(message_unit_time, sender_name, message_content):
     #      """
-    #      从POST数据中移除特定消息
+    #      格式化消息信息
     #      """
-    #      for post_json in post_data_list:
-    #          if 'id' in post_json and post_json['id'] == message_id:
-    #              post_data_list.remove(post_json)
-
-    def handle_message_content(message_unit_time, sender_name, message_content):
-        """
-        格式化消息信息
-        """
-        if message_unit_time and sender_name and message_content:
-            message_time = time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
-            message = message_time + '|' + \
-                "{:<{x}}".format(sender_name, x=20) + message_content
-        else:
-            message = None
-        return message
+    #      if message_unit_time and sender_name and message_content:
+    #          message_time = time.strftime(
+    #              "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
+    #          message = message_time + '|' + \
+    #              "{:<{x}}".format(sender_name, x=20) + message_content
+    #      else:
+    #          message = None
+    #      return message

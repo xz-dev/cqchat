@@ -65,10 +65,32 @@ class ChatRecord(BaseDict):
         super().__init__(manager=manager)
 
 
+class GroupListDict(BaseDict):
+    """群组列表字典
+    """
+
+    def __init__(self, manager):
+        super().__init__(manager=manager)
+
+
+class FriendListDict(BaseDict):
+    """好友列表字典
+    """
+
+    def __init__(self, manager):
+        super().__init__(manager=manager)
+
+
 class TrayMessage(BaseList):
     """系统托盘消息提醒列表
     """
 
+    def __init__(self, manager):
+        super().__init__(manager=manager)
+
+class RunStatus(BaseDict):
+    """程序运行状态字典
+    """
     def __init__(self, manager):
         super().__init__(manager=manager)
 
@@ -81,3 +103,4 @@ class Data():
         manager = multiprocessing.Manager()  # 初始化manager
         self.chat_record = ChatRecord(manager)  # 聊天记录类
         self.post_data = PostData(manager)  # post信息类
+        self.status = RunStatus(manager)  # 运行状态

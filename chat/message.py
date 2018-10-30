@@ -1,4 +1,4 @@
-from ..get import get_api
+from ..data.get import get_api
 
 __all__ = ['Message', ]
 

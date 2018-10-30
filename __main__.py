@@ -1,10 +1,10 @@
 import multiprocessing as mp
 
-#  import Ui
+from . import Ui
 #  import handlePostData
 #  import startMojoWeb
-from post.PostServer import PostServer
-from data import *
+from .post.PostServer import PostServer
+from .data import data_handle, data
 
 if __name__ == '__main__':
     try:
@@ -20,8 +20,13 @@ if __name__ == '__main__':
             target=PostServer.run, args=(Data.post_data.data, ))
         post_handle = mp.Process(
             target=HandlePostData.run, args=(Data, ))
+        # 显示主UI
+        ui = mp.Process(
+            target=Ui.main, args=(Data, ))
+        ui.start()
         post_handle.start()
         post_server.start()
+        ui.join()
         post_server.join()
         post_handle.join()
         #  # mojo-webqq服务器
