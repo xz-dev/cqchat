@@ -14,9 +14,6 @@ class HandlePostData():
             while True:
                 s = self.__data.chat_record.data
                 self.__sort_post_data()
-                #  if s != self.__data.chat_record.data:
-                #      print("=========")
-                #      print(self.__data.chat_record.data)
         except KeyboardInterrupt:
             pass
 
@@ -44,16 +41,16 @@ class HandlePostData():
             message_dict_list = [i for i in message_dict_list if i != None]
             if len(message_dict_list):
                 for single_message_list in message_dict_list:
-                    numbering = single_message_list[0]
-                    message_data = single_message_list[1]
-                    self.__add_chat_record(message_data)
+                    self.__add_chat_record(single_message_list)
             else:
                 time.sleep(0.2)
         else:
             time.sleep(0.2)
 
-    def __add_chat_record(self, message_data):
+    def __add_chat_record(self, single_message_list):
+        message_data = single_message_list[1]
         chat_record = self.__data.chat_record.data
+        post_data = self.__data.post_data
         try:
             if message_data['group_id']:
                 sender_id = message_data['group_id']
@@ -71,6 +68,7 @@ class HandlePostData():
                 chat_record[sender_id] = tmp_list
             else:
                 chat_record[sender_id] = [message_data, ]
+            numbering = single_message_list[0]
             del(post_data.data[numbering])
         except TypeError:
             pass
