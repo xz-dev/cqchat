@@ -1,14 +1,15 @@
-from .base_chat_object import *
+from .base_chat_object import BaseChatListObject, BaseContactObject
 
-__all__ = ['ChatObject', ]
-#  __all__ = ['FriendObject', 'GroutObject',
-#             'FriendListObject', 'GroupListObject']
+__all__ = [
+    'ChatObject',
+]
 
 
 class ChatObject():
     """聊天对象的初始类
     作用: 导入data数据
     """
+
     # TODO: 简化/删除此类
 
     def __init__(self, data):
@@ -48,12 +49,12 @@ class FriendListObject(BaseChatListObject):
 
     def category(self):
         # 好友分组排序字典
-        chat_object_type = self.chat_object_type
         info_data = self.info.info()
         if info_data:
-            category_tmp_list = [chat_object['category'] for chat_object in info_data]
+            category_tmp_list = [
+                chat_object['category'] for chat_object in info_data
+            ]
             category_list = list(set(category_tmp_list))
-            #  category_list.sort(key=category_tmp_list.index)
             # 调整数组顺序
             return category_list
         else:

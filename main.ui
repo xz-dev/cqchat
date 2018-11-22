@@ -123,16 +123,6 @@
               <string>好友</string>
              </property>
             </column>
-            <item>
-             <property name="text">
-              <string>新建项目</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>新建子项目</string>
-              </property>
-             </item>
-            </item>
            </widget>
           </item>
          </layout>

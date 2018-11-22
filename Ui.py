@@ -20,17 +20,20 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         from .chat.chat_object import ChatObject
         self.ChatObject = ChatObject(self.__data)
         # 初始化ChatObject, 避免重复初始化
+        self.current_contact = None
 
     def __connect_event(self):
         """绑定的信号槽
         """
         self.FriendTree.doubleClicked.connect(
             self.__doubleclick_FriendTree_item)  # 调取发送函数
+        self.SendButton.setShortcut("Ctrl+Return")  # CTRL + 回车键绑定发送键
+        self.SendButton.clicked.connect(self.__send_message)  # 调取发送函数
 
     def __flash_init_Qt(self):
-        self.__init_friend_list()
+        self.__init_FriendTree()
 
-    def __init_friend_list(self):
+    def __init_FriendTree(self):
         friend_list = self.ChatObject.ChatList.FriendListObject()
         friend_info_list = friend_list.info.info()  # 好友信息
         if friend_info_list:
@@ -50,20 +53,29 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
     def __load_MessageList(self):
         """载入消息列表
         """
-        ui_data = self.__data.ui_data
-        if 'current_contact_id' in ui_data.tmp_dict.keys():
-            current_contact = self.ChatObject.ChatIndividual.FriendObject(
-                ui_data.tmp_dict['current_contact_id'])
-        else:
+
+        def format_chat_record(chat_record_dict):
+            """格式化消息信息
+            """
+            import time
+            sender_name = chat_record_dict['sender_name']
+            message_unit_time = chat_record_dict['message_unit_time']
+            message_content = chat_record_dict['message_content']
+            message_time = time.strftime("%Y-%m-%d %H:%M:%S",
+                                         time.localtime(message_unit_time))
+            message = message_time + '|' + \
+                "{:<{x}}".format(sender_name, x=20) + message_content
+            return message
+
+        current_contact = self.current_contact
+        if current_contact is None:
             return False
-        chat_record = current_contact.chat_record
+        chat_record = current_contact.get_chat_record()
         root = self.MessageList
         root_count = root.count()
-        #  message_list = [
-        #     chat_record[i] for i in range(root_count, len(chat_record))
-        #  ]
         for i in range(root_count, len(chat_record)):
-            message_content = chat_record[i]['message_content']
+            #  message_content = chat_record[i]['message_content']
+            message_content = format_chat_record(chat_record[i])
             new_message = QtWidgets.QListWidgetItem()
             new_message.setText(message_content)
             self.MessageList.addItem(new_message)
@@ -71,12 +83,24 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
 
     def __doubleclick_FriendTree_item(self):
         try:
-            self.__data.ui_data.tmp_dict['current_contact_id'] = int(
-                str(self.FriendTree.currentItem()))  # 获取好友ID
+            current_contact_id = int(str(
+                self.FriendTree.currentItem()))  # 获取好友ID
+            self.current_contact = self.ChatObject.ChatIndividual.FriendObject(
+                current_contact_id)
         except ValueError:
             pass
         else:
             self.InputBox.setFocus()  # 文本框获得焦点
+
+    def __send_message(self):
+        send_text = self.InputBox.toPlainText()
+        self.InputBox.clear()
+        # 发送键按下后获取输入框文本并清空
+        if not len(send_text):
+            return False
+        current_contact = self.current_contact
+        if current_contact:
+            current_contact.message.send_message(send_text)
 
     def load_contact_tree(self, tree_widget, category, friend_info_list):
         from .ui.widgets import ChatTreeWidgetItem

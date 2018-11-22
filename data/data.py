@@ -131,14 +131,7 @@ class UiData(BaseDict):
 
     def __init__(self, manager):
         super().__init__(manager)
-        #  self.widget = UiWidget(manager)
         self.tmp_dict = BaseDict(manager)
-
-
-#  class UiWidget():
-#      def __init__(self, manager):
-#          self.friend_tree = BaseDict(manager)
-#          self.group_tree = BaseDict(manager)
 
 
 class Data():

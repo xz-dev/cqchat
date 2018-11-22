@@ -19,19 +19,18 @@ class HandlePostData():
             pass
 
     def __sort_post_data(self):
-        """
-        提取所有有关好友的消息
-        (包括接收与发送)
-        并整合为dict
-        friend_message_dict[chat_object_id] = [{
-            'message_id': message_id,
-            'message_unit_time': message_unit_time,
-            'message_content': message,
-            'sender_name': sender_name,
-            'sender_id': sender_id,
-            'group_name': group_name,
-            'group_id': group_id,
-            }, ...]
+        """提取所有有关好友的消息
+            (包括接收与发送)
+            并整合为dict
+            friend_message_dict[chat_object_id] = [{
+                'message_id': message_id,
+                'message_unit_time': message_unit_time,
+                'message_content': message,
+                'sender_name': sender_name,
+                'sender_id': sender_id,
+                'group_name': group_name,
+                'group_id': group_id,
+                }, ...]
         """
         post_data = self.__data.post_data
         if len(post_data):
@@ -147,16 +146,3 @@ class HandlePostData():
     def add_message_notification(self, single_message_dict):
         tray_message = self.tray_message
         tray_message.append(single_message_dict)
-
-    #  def __format__(self):
-    #      """
-    #      格式化消息信息
-    #      """
-    #      if message_unit_time and sender_name and message_content:
-    #          message_time = time.strftime(
-    #              "%Y-%m-%d %H:%M:%S", time.localtime(message_unit_time))
-    #          message = message_time + '|' + \
-    #              "{:<{x}}".format(sender_name, x=20) + message_content
-    #      else:
-    #          message = None
-    #      return message

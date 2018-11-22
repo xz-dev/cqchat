@@ -12,22 +12,21 @@ class BaseChatObject():
     def __call_children(self):
         self.chat_object_id = getattr(self, 'chat_object_id')
         self.chat_object_type = getattr(self, 'chat_object_type')
-        #  self.chat_info_data = getattr(self, 'chat_info_data')
-
-    #  def search_chat_info(self, match_dict):
-    #      self.chat_info_data.search(match_dict)
 
 
 class BaseContactObject(BaseChatObject):
     def __init__(self, data):
-        self.__data = data
         super().__init__()
+        self.__data = data
         self.message = Message(self.chat_object_id, self.chat_object_type)
-        chat_record = self.__data.chat_record
+
+    def get_chat_record(self, is_format):
+        all_chat_record = self.__data.chat_record
         chat_object_id = self.chat_object_id
-        if chat_object_id not in chat_record:
-            chat_record[chat_object_id] = list()
-        self.chat_record = chat_record[chat_object_id]
+        if chat_object_id not in all_chat_record:
+            all_chat_record[chat_object_id] = list()
+        chat_record = all_chat_record[chat_object_id]
+        return chat_record
 
 
 class BaseChatListObject(BaseChatObject):
