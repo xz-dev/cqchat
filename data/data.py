@@ -1,55 +1,76 @@
 import multiprocessing
 
-__all__ = ['Data', ]
-
-
-def search_dict(target_dict, match_dict):
-    # 根据match_dict匹配target_dict
-    try:
-        numering = search_dict.key()
-        search_dict = search_dict.value()
-        if search_dict[term] == content:
-            return numbering, search_dict
-        else:
-            return None
-    except:
-        return None
+__all__ = [
+    'Data',
+]
 
 
 class BaseList():
-    def __init__(self, message):
-        self.data = manager.list()
+    def __init__(self, manager):
+        self.__data = manager.list()
+        self.append = self.__data.append()
 
-    def add(self, item):
-        self.data.append(item)
+    def __repr__(self):
+        return str(self.__data)
+
+    def __iter__(self):
+        return iter(self.values)
+
+    def __reversed__(self):
+        return reversed(self.values)
+
+    def __concat__(self, other):
+        return self.__data + other
+
+    def append(self, item):
+        self.__data.append(item)
 
 
 class BaseDict():
     def __init__(self, manager):
-        self.data = manager.dict()
+        self.__data = manager.dict()
 
-    def search(self, match_dict):
-        with multiprocessing.Pool as pool:
-            res = pool.map(
-                partial(search_dict, match_dict=match_dict), self.data)
-        res = [i for i in res if i is not None]
-        return res
+    def __repr__(self):
+        return str(self.__data)
 
-    def add(self, key, value):
-        data = self.data
+    def __getitem__(self, key):
+        return self.__data[key]
+
+    def __setitem__(self, key, value):
+        self.__data[key] = value
+
+    def __len__(self):
+        return len(self.__data)
+
+    def __iter__(self):
+        tmp_dict = dict(self.__data)
+        return iter(tmp_dict)
+
+    def __delitem__(self, key):
+        del (self.__data[key])
+
+    def __bool__(self):
+        if len(self.__data):
+            return True
+        else:
+            return False
+
+    def keys(self):
+        return self.__data.keys()
+
+    def clear(self):
+        self.__data.clear()
+
+    def add_list(self, key, value):
+        data = self.__data
         if key in data:
             tmp_list = data[key]
             tmp_list.append(value)
             data[key] = tmp_list
         else:
-            data[key] = [value, ]
-
-    def replace(self, key, value):
-        data = self.data
-        data[key] = value
-
-    def clear(self):
-        self.data.clear()
+            data[key] = [
+                value,
+            ]
 
 
 class PostData(BaseDict):
@@ -69,7 +90,7 @@ class ChatRecord(BaseDict):
     """
 
     def __init__(self, manager):
-        super().__init__(manager=manager)
+        super().__init__(manager)
 
 
 class GroupListDict(BaseDict):
@@ -77,7 +98,7 @@ class GroupListDict(BaseDict):
     """
 
     def __init__(self, manager):
-        super().__init__(manager=manager)
+        super().__init__(manager)
 
 
 class FriendListDict(BaseDict):
@@ -85,7 +106,7 @@ class FriendListDict(BaseDict):
     """
 
     def __init__(self, manager):
-        super().__init__(manager=manager)
+        super().__init__(manager)
 
 
 class TrayMessage(BaseList):
@@ -93,7 +114,7 @@ class TrayMessage(BaseList):
     """
 
     def __init__(self, manager):
-        super().__init__(manager=manager)
+        super().__init__(manager)
 
 
 class RunStatus(BaseDict):
@@ -101,7 +122,7 @@ class RunStatus(BaseDict):
     """
 
     def __init__(self, manager):
-        super().__init__(manager=manager)
+        super().__init__(manager)
 
 
 class UiData(BaseDict):
@@ -109,15 +130,15 @@ class UiData(BaseDict):
     """
 
     def __init__(self, manager):
-        super().__init__(manager=manager)
-        self.widget = UiWidget(manager)
+        super().__init__(manager)
+        #  self.widget = UiWidget(manager)
         self.tmp_dict = BaseDict(manager)
 
 
-class UiWidget():
-    def __init__(self, manager):
-        self.friend_tree = BaseDict(manager)
-        self.group_tree = BaseDict(manager)
+#  class UiWidget():
+#      def __init__(self, manager):
+#          self.friend_tree = BaseDict(manager)
+#          self.group_tree = BaseDict(manager)
 
 
 class Data():

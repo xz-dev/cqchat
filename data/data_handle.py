@@ -1,7 +1,9 @@
 import multiprocessing as mp
 import time
 
-__all__ = ['PostData', ]
+__all__ = [
+    'HandlePostData',
+]
 
 
 class HandlePostData():
@@ -12,7 +14,6 @@ class HandlePostData():
         try:
             self.__data = Data
             while True:
-                s = self.__data.chat_record.data
                 self.__sort_post_data()
         except KeyboardInterrupt:
             pass
@@ -33,12 +34,12 @@ class HandlePostData():
             }, ...]
         """
         post_data = self.__data.post_data
-        if len(post_data.data):
+        if len(post_data):
             message_dict_list = list()
             with mp.Pool() as pool:
-                message_dict_list = pool.map(
-                    self._find_message, range(len(post_data.data)))
-            message_dict_list = [i for i in message_dict_list if i != None]
+                message_dict_list = pool.map(self._find_message,
+                                             range(len(post_data)))
+            message_dict_list = [i for i in message_dict_list if i]
             if len(message_dict_list):
                 for single_message_list in message_dict_list:
                     self.__add_chat_record(single_message_list)
@@ -49,14 +50,14 @@ class HandlePostData():
 
     def __add_chat_record(self, single_message_list):
         message_data = single_message_list[1]
-        chat_record = self.__data.chat_record.data
+        chat_record = self.__data.chat_record
         post_data = self.__data.post_data
         try:
             if message_data['group_id']:
                 sender_id = message_data['group_id']
             else:
                 sender_id = message_data['sender_id']
-            if sender_id in chat_record:
+            if sender_id in chat_record and chat_record[sender_id]:
                 tmp_list = chat_record[sender_id]
                 # 确保列表顺序按时间顺序
                 last_message_unit_time = tmp_list[-1]['message_unit_time']
@@ -67,9 +68,11 @@ class HandlePostData():
                     tmp_list.insert(-1, message_data)
                 chat_record[sender_id] = tmp_list
             else:
-                chat_record[sender_id] = [message_data, ]
+                chat_record[sender_id] = [
+                    message_data,
+                ]
             numbering = single_message_list[0]
-            del(post_data.data[numbering])
+            del (post_data[numbering])
         except TypeError:
             pass
 
@@ -77,15 +80,15 @@ class HandlePostData():
         """
         寻找消息并分类
         """
-        post_json = self.__data.post_data.data[numbering]
-        #  print(post_json)
+        post_json = self.__data.post_data[numbering]
         if post_json['post_type'] != 'event':
             message_id = None
             sender_id = None
             sender_name = None
             message_unit_time = None
             message_content = None
-            if post_json['post_type'] == 'receive_message' and post_json['class'] == 'recv':
+            if post_json['post_type'] == 'receive_message' and post_json[
+                    'class'] == 'recv':
                 # 接收消息
                 if post_json['type'] == 'friend_message':
                     # 获取好友发送的消息
@@ -105,7 +108,8 @@ class HandlePostData():
                     sender_name = post_json['sender']
                     message_unit_time = post_json['time']
                     message_content = post_json['content']
-            elif post_json['post_type'] == 'send_message' and post_json['class'] == 'send':
+            elif post_json['post_type'] == 'send_message' and post_json[
+                    'class'] == 'send':
                 if post_json['type'] == 'friend_message':
                     # 自己发给好友的消息
                     message_id = post_json['id']
@@ -124,16 +128,17 @@ class HandlePostData():
                     sender_name = post_json['sender'] + "(me)"
                     message_unit_time = post_json['time']
                     message_content = post_json['content']
-            single_message_dict = {'message_id': message_id,
-                                   # 用于判断消息先后
-                                   'local_unix_time': post_json['local_unix_time'],
-                                   'message_unit_time': message_unit_time,
-                                   'message_content': message_content,
-                                   'sender_name': sender_name,
-                                   'sender_id': sender_id,
-                                   'group_name': group_name,
-                                   'group_id': group_id,
-                                   }
+            single_message_dict = {
+                'message_id': message_id,
+                # 用于判断消息先后
+                'local_unix_time': post_json['local_unix_time'],
+                'message_unit_time': message_unit_time,
+                'message_content': message_content,
+                'sender_name': sender_name,
+                'sender_id': sender_id,
+                'group_name': group_name,
+                'group_id': group_id,
+            }
 
         else:
             single_message_dict = None
@@ -143,7 +148,7 @@ class HandlePostData():
         tray_message = self.tray_message
         tray_message.append(single_message_dict)
 
-    #  def handle_message_content(message_unit_time, sender_name, message_content):
+    #  def __format__(self):
     #      """
     #      格式化消息信息
     #      """

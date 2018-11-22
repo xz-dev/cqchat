@@ -25,7 +25,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="QTabWidget" name="ContactTabWidget">
+       <widget class="QTabWidget" name="ContactTab">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -123,6 +123,16 @@
               <string>好友</string>
              </property>
             </column>
+            <item>
+             <property name="text">
+              <string>新建项目</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>新建子项目</string>
+              </property>
+             </item>
+            </item>
            </widget>
           </item>
          </layout>
@@ -171,7 +181,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
-             <widget class="QListWidget" name="StatusListWidget"/>
+             <widget class="QListWidget" name="StatusList"/>
             </item>
            </layout>
           </widget>
@@ -181,7 +191,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="QListWidget" name="MessageListWidget">
+             <widget class="QListWidget" name="MessageList">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>

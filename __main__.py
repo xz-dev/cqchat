@@ -12,12 +12,12 @@ if __name__ == '__main__':
         manager = mp.Manager()
         POST_data = manager.list()
         all_message_dict = manager.dict()
-        Data = data.Data()
         PostServer = PostServer()
+        Data = data.Data()
         HandlePostData = data_handle.HandlePostData()
         # POST服务器
         post_server = mp.Process(
-            target=PostServer.run, args=(Data.post_data.data, ))
+            target=PostServer.run, args=(Data.post_data, ))
         post_handle = mp.Process(
             target=HandlePostData.run, args=(Data, ))
         # 显示主UI

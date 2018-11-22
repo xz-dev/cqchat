@@ -23,7 +23,11 @@ class BaseContactObject(BaseChatObject):
         self.__data = data
         super().__init__()
         self.message = Message(self.chat_object_id, self.chat_object_type)
-        self.chat_record = self.__data.chat_record.data[self.chat_object_id]
+        chat_record = self.__data.chat_record
+        chat_object_id = self.chat_object_id
+        if chat_object_id not in chat_record:
+            chat_record[chat_object_id] = list()
+        self.chat_record = chat_record[chat_object_id]
 
 
 class BaseChatListObject(BaseChatObject):
