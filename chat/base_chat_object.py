@@ -20,7 +20,7 @@ class BaseContactObject(BaseChatObject):
         self.__data = data
         self.message = Message(self.chat_object_id, self.chat_object_type)
 
-    def get_chat_record(self, is_format):
+    def get_chat_record(self):
         all_chat_record = self.__data.chat_record
         chat_object_id = self.chat_object_id
         if chat_object_id not in all_chat_record:

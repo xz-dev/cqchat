@@ -1,4 +1,5 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtCore, QtWidgets
+
 from . import MainGui
 
 
@@ -26,12 +27,15 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         """绑定的信号槽
         """
         self.FriendTree.doubleClicked.connect(
-            self.__doubleclick_FriendTree_item)  # 调取发送函数
+            self.__doubleclick_FriendTree_item)  # 双击联系人列表
+        self.GroupTree.doubleClicked.connect(
+            self.__doubleclick_GroupTree_item)  # 双击群组列表
         self.SendButton.setShortcut("Ctrl+Return")  # CTRL + 回车键绑定发送键
         self.SendButton.clicked.connect(self.__send_message)  # 调取发送函数
 
     def __flash_init_Qt(self):
         self.__init_FriendTree()
+        self.__init_GroupTree()
 
     def __init_FriendTree(self):
         friend_list = self.ChatObject.ChatList.FriendListObject()
@@ -42,6 +46,15 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
             for i in friend_info_list:
                 tree_widget = self.FriendTree
                 self.load_contact_tree(tree_widget, i['category'], i)
+
+    def __init_GroupTree(self):
+        group_list = self.ChatObject.ChatList.GroupListObject()
+        group_info_list = group_list.info.info()  # 群组信息
+        if group_info_list:
+            self.GroupTree.clear()  # 清空群组列表
+            for i in group_info_list:
+                tree_widget = self.GroupTree
+                self.load_contact_tree(tree_widget, None, i)
 
     def __auto_refresh_ui(self):
         """定时刷新数据
@@ -74,7 +87,6 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         root = self.MessageList
         root_count = root.count()
         for i in range(root_count, len(chat_record)):
-            #  message_content = chat_record[i]['message_content']
             message_content = format_chat_record(chat_record[i])
             new_message = QtWidgets.QListWidgetItem()
             new_message.setText(message_content)
@@ -82,11 +94,24 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
             self.MessageList.scrollToBottom()
 
     def __doubleclick_FriendTree_item(self):
+        tree_widget = self.FriendTree
+        self.__get_new_current_contact(tree_widget)
+
+    def __doubleclick_GroupTree_item(self):
+        tree_widget = self.GroupTree
+        self.__get_new_current_contact(tree_widget)
+
+    def __get_new_current_contact(self, tree_widget):
+        ChatObject = self.ChatObject
         try:
-            current_contact_id = int(str(
-                self.FriendTree.currentItem()))  # 获取好友ID
-            self.current_contact = self.ChatObject.ChatIndividual.FriendObject(
-                current_contact_id)
+            current_contact_id = int(str(tree_widget.currentItem()))  # 获取好友ID
+            if tree_widget == self.FriendTree:
+                self.current_contact = ChatObject.ChatIndividual.FriendObject(
+                    current_contact_id)
+            elif tree_widget == self.GroupTree:
+                self.current_contact = ChatObject.ChatIndividual.GroupObject(
+                    current_contact_id)
+            self.MessageList.clear()
         except ValueError:
             pass
         else:
@@ -102,39 +127,41 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         if current_contact:
             current_contact.message.send_message(send_text)
 
-    def load_contact_tree(self, tree_widget, category, friend_info_list):
+    def load_contact_tree(self, tree_widget, category, contact_info_list):
         from .ui.widgets import ChatTreeWidgetItem
         try:
-            friend_markname = friend_info_list['markname']
+            contact_markname = contact_info_list['markname']
         except KeyError:
-            friend_markname = None
-        if not friend_markname:
-            friend_markname = friend_info_list['name']
-        #  root = self.FriendTree.invisibleRootItem()
+            contact_markname = None
+        if not contact_markname:
+            contact_markname = contact_info_list['name']
         root = tree_widget.invisibleRootItem()
         root_count = root.childCount()
         root_category_text_list = [
             root.child(i).text(0) for i in range(root_count)
         ]
-        friend_item = ChatTreeWidgetItem({
-            'name': friend_markname,
-            'id': friend_info_list['id']
+        contact_item = ChatTreeWidgetItem({
+            'name': contact_markname,
+            'id': contact_info_list['id']
         })
-        friend_item.setFlags(QtCore.Qt.ItemIsSelectable
-                             | QtCore.Qt.ItemIsUserCheckable
-                             | QtCore.Qt.ItemIsEnabled)
+        contact_item.setFlags(QtCore.Qt.ItemIsSelectable
+                              | QtCore.Qt.ItemIsUserCheckable
+                              | QtCore.Qt.ItemIsEnabled)
         # 创建好友组件
         if category in root_category_text_list:
             category_widget = self.FriendTree.findItems(
                 category, QtCore.Qt.MatchFixedString)[0]
         else:
-            category_widget = QtWidgets.QTreeWidgetItem([category])
-            self.FriendTree.addTopLevelItem(category_widget)
+            category_widget = ChatTreeWidgetItem({
+                'name': category,
+                'id': None
+            })
+            tree_widget.addTopLevelItem(category_widget)
             category_widget.setFlags(QtCore.Qt.ItemIsSelectable
                                      | QtCore.Qt.ItemIsDragEnabled
                                      | QtCore.Qt.ItemIsUserCheckable
                                      | QtCore.Qt.ItemIsEnabled)
-        category_widget.addChild(friend_item)
+        category_widget.addChild(contact_item)
         # 添加好友组件
 
 

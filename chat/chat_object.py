@@ -34,8 +34,8 @@ class ChatIndividual():
     def FriendObject(self, chat_object_id):
         return FriendObject(self.__data, chat_object_id)
 
-    def GroutObject(self, chat_object_id):
-        return GroutObject(self.__data, chat_object_id)
+    def GroupObject(self, chat_object_id):
+        return GroupObject(self.__data, chat_object_id)
 
 
 class FriendListObject(BaseChatListObject):
@@ -81,7 +81,7 @@ class FriendObject(BaseContactObject):
         super().__init__(data)
 
 
-class GroutObject(BaseContactObject):
+class GroupObject(BaseContactObject):
     """群组对象
     """
 
