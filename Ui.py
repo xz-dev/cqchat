@@ -165,6 +165,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
 
     def load_contact_tree(self, tree_widget, category, contact_info_list):
         from .ui.widgets import ChatTreeWidgetItem
+        category = str(category)
         try:
             contact_markname = contact_info_list['markname']
         except KeyError:
@@ -185,7 +186,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
                               | QtCore.Qt.ItemIsEnabled)
         # 创建好友组件
         if category in root_category_text_list:
-            category_widget = self.FriendTree.findItems(
+            category_widget = tree_widget.findItems(
                 category, QtCore.Qt.MatchFixedString)[0]
         else:
             category_widget = ChatTreeWidgetItem({
