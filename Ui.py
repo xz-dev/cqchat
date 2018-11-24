@@ -44,13 +44,15 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         self.return_text_shortcut.activated.connect(
             self.__add_return_to_InputBox)
         self.return_text_shortcut.setEnabled(False)
+        # CTRL+回车 在Input Box添加回车
 
     def __add_return_to_InputBox(self):
+        """在光标后添加一个回车
+        """
         cursor = self.InputBox.textCursor()
         cursor.insertText('\n')
         cursor.movePosition(QtGui.QTextCursor.NextWord,
                             QtGui.QTextCursor.KeepAnchor)
-        # CTRL + 回车在Input Box添加回车
 
     def __event_filter(self):
         """绑定事件过滤器
@@ -59,7 +61,10 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
 
     def eventFilter(self, obj, event):
         if obj == self.InputBox:
-            self.return_text_shortcut.setEnabled(True)
+            if QtWidgets.QApplication.focusWidget() == self.InputBox:
+                self.return_text_shortcut.setEnabled(True)
+            else:
+                self.return_text_shortcut.setEnabled(False)
             if event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Return:
                     self.InputBox.setText(
