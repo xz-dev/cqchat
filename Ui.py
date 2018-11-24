@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from . import MainGui
 
@@ -23,25 +23,56 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         # 初始化ChatObject, 避免重复初始化
         self.current_contact = None
 
+    def __flash_init_Qt(self):
+        #  from .ui import widgets
+        #  self.InputBox.keyPressEvent = widgets.InputBox.keyPressEvent
+        #  self.InputBox.keyPressEvent = QtWidgets.QTextEdit.keyPressEvent
+        self.__init_FriendTree()
+        self.__init_GroupTree()
+
     def __connect_event(self):
         """绑定的信号槽
         """
+        self.__event_filter()
         self.FriendTree.doubleClicked.connect(
             self.__doubleclick_FriendTree_item)  # 双击联系人列表
         self.GroupTree.doubleClicked.connect(
             self.__doubleclick_GroupTree_item)  # 双击群组列表
-        self.SendButton.setShortcut("Ctrl+Return")  # CTRL + 回车键绑定发送键
         self.SendButton.clicked.connect(self.__send_message)  # 调取发送函数
+        self.return_text_shortcut = QtWidgets.QShortcut(
+            QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Return), self)
+        self.return_text_shortcut.activated.connect(
+            self.__add_return_to_InputBox)
+        self.return_text_shortcut.setEnabled(False)
 
-    def __flash_init_Qt(self):
-        self.__init_FriendTree()
-        self.__init_GroupTree()
+    def __add_return_to_InputBox(self):
+        cursor = self.InputBox.textCursor()
+        cursor.insertText('\n')
+        cursor.movePosition(QtGui.QTextCursor.NextWord,
+                            QtGui.QTextCursor.KeepAnchor)
+        # CTRL + 回车在Input Box添加回车
+
+    def __event_filter(self):
+        """绑定事件过滤器
+        """
+        self.InputBox.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if obj == self.InputBox:
+            self.return_text_shortcut.setEnabled(True)
+            if event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Return:
+                    self.InputBox.setText(
+                        self.InputBox.toPlainText().rstrip('\n'))
+                    self.SendButton.animateClick()
+        else:
+            self.return_text_shortcut.setEnabled(False)
+        return super(MainPage, self).eventFilter(obj, event)
 
     def __init_FriendTree(self):
         friend_list = self.ChatObject.ChatList.FriendListObject()
         friend_info_list = friend_list.info.info()  # 好友信息
         if friend_info_list:
-            #  self.__data.ui_data.widget.friend_tree.clear()
             self.FriendTree.clear()  # 清空联系人列表
             for i in friend_info_list:
                 tree_widget = self.FriendTree

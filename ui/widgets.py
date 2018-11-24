@@ -1,6 +1,8 @@
 from PyQt5 import QtCore, QtWidgets
 
-__all__ = ['ChatTreeWidgetItem', ]
+__all__ = [
+    'ChatTreeWidgetItem',
+]
 
 
 class ChatTreeWidgetItem(QtWidgets.QTreeWidgetItem):
@@ -11,8 +13,5 @@ class ChatTreeWidgetItem(QtWidgets.QTreeWidgetItem):
         _translate = QtCore.QCoreApplication.translate
         self.setText(0, _translate("MainWindow", object_name))
 
-
     def __str__(self):
         return str(self.chat_info_dict['id'])
-
-
