@@ -20,7 +20,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,3">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,3">
       <property name="spacing">
        <number>2</number>
       </property>
@@ -36,7 +36,7 @@
          <bool>false</bool>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <property name="documentMode">
          <bool>false</bool>
@@ -47,51 +47,6 @@
         <property name="tabBarAutoHide">
          <bool>false</bool>
         </property>
-        <widget class="QWidget" name="SearchTab">
-         <attribute name="icon">
-          <iconset>
-           <normaloff>icon/search.png</normaloff>icon/search.png</iconset>
-         </attribute>
-         <attribute name="title">
-          <string>Search</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,7">
-            <item>
-             <widget class="QPushButton" name="SearchContactButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset>
-                <normaloff>icon/search categories.png</normaloff>icon/search categories.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="SearchContactBar">
-              <property name="placeholderText">
-               <string>搜索联系人</string>
-              </property>
-              <property name="clearButtonEnabled">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QListWidget" name="SearchContactList"/>
-          </item>
-         </layout>
-        </widget>
         <widget class="QWidget" name="friendTab">
          <attribute name="icon">
           <iconset>
@@ -157,7 +112,7 @@
         <item>
          <widget class="QTabWidget" name="ChatTabWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="tabsClosable">
            <bool>true</bool>
@@ -165,16 +120,6 @@
           <property name="tabBarAutoHide">
            <bool>false</bool>
           </property>
-          <widget class="QWidget" name="tab_0">
-           <attribute name="title">
-            <string>Status</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
-            <item>
-             <widget class="QListWidget" name="StatusList"/>
-            </item>
-           </layout>
-          </widget>
           <widget class="QWidget" name="tab_1">
            <attribute name="title">
             <string>Tab 1</string>
