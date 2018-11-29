@@ -1,8 +1,7 @@
 import multiprocessing as mp
 
-from . import Ui
-#  import handlePostData
-#  import startMojoWeb
+#  from . import mojo
+from . import main_ui
 from .post.PostServer import PostServer
 from .data import data_handle, data
 
@@ -15,24 +14,24 @@ if __name__ == '__main__':
         PostServer = PostServer()
         Data = data.Data()
         HandlePostData = data_handle.HandlePostData()
+        # mojo-webqq服务器
+        #  webqq_server = mp.Process(
+        #      target=mojo.startMojoWebQQ, args=(mojo_webqq_config_path, ))
         # POST服务器
         post_server = mp.Process(
             target=PostServer.run, args=(Data.post_data, ))
-        post_handle = mp.Process(
-            target=HandlePostData.run, args=(Data, ))
+        post_handle = mp.Process(target=HandlePostData.run, args=(Data, ))
         # 显示主UI
-        ui = mp.Process(
-            target=Ui.main, args=(Data, ))
-        ui.start()
+        #  Ui = mp.Process(
+        #      target=Ui.main, args=(Data, ))
+        #  Ui.start()
         post_handle.start()
         post_server.start()
-        ui.join()
-        post_server.join()
+        #  webqq_server.start()
+        main_ui.main(Data)
+        #  Ui.join()
         post_handle.join()
-        #  # mojo-webqq服务器
-        #  webqq_server = mp.Process(
-        #      target=startMojoWeb.startMojoWebQQ,
-        #      args=(mojo_webqq_config_path,))
+        post_server.join()
         #  # POST信息处理
         #  handle_friend_message = mp.Process(
         #      target=handlePostData.getMessage,
@@ -42,7 +41,6 @@ if __name__ == '__main__':
         #      target=Ui.main, args=(all_message_dict, POST_data, ))
         #  startMojoWeb.stopMojoWebQQ()  # 完全关闭MojoWebQQ
         #  post_server.start()           # 启动POST服务器
-        #  webqq_server.start()          # 启动MojoWebQQ
         #  # 扫码后启动好友消息处理程序
         #  #  handle_friend_message.start()
         #  # 启动主页UI

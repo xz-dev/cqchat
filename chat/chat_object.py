@@ -47,9 +47,9 @@ class FriendListObject(BaseChatListObject):
         self.chat_object_type = 'friend_list'
         super().__init__()
 
-    def category(self):
+    def category_list(self):
         # 好友分组排序字典
-        info_data = self.info.info()
+        info_data = self.info()
         if info_data:
             category_tmp_list = [
                 chat_object['category'] for chat_object in info_data

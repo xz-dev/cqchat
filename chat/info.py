@@ -10,6 +10,11 @@ class Info():
         self.__info_api = ''
         self.__info_data = None
 
+    def __iter__(self):
+        if not self.__info_data:
+            self.reflash_info_data()
+        return iter(self.__info_data)
+
     def __get_info(self, is_https=0, host='127.0.0.1', port='5000'):
         api = self.__info_api
         chat_object_id = self.__chat_object_id
@@ -18,7 +23,7 @@ class Info():
             resp = get_api.get_data(payload=payload, api=api)
             resp_dict = resp[0]
             return resp_dict
-        except:
+        except KeyError:
             return None
 
     def __get_list_info(self, is_https=0, host='127.0.0.1', port='5000'):
@@ -41,8 +46,3 @@ class Info():
                 elif chat_object_type == 'group':
                     self.__info_api = '/openqq/search_group'
                 self.__info_data = self.__get_info()
-
-    def info(self):
-        if not self.__info_data:
-            self.reflash_info_data()
-        return self.__info_data

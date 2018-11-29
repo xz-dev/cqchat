@@ -7,7 +7,8 @@ __all__ = ['BaseContactObject', 'BaseChatListObject']
 class BaseChatObject():
     def __init__(self):
         self.__call_children()
-        self.info = Info(self.chat_object_id, self.chat_object_type)
+        self.info = lambda: list(Info(self.chat_object_id,
+                                      self.chat_object_type))
 
     def __call_children(self):
         self.chat_object_id = getattr(self, 'chat_object_id')

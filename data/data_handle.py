@@ -7,12 +7,9 @@ __all__ = [
 
 
 class HandlePostData():
-    def __init__(self):
-        pass
-
     def run(self, Data):
+        self.__data = Data
         try:
-            self.__data = Data
             while True:
                 self.__sort_post_data()
         except KeyboardInterrupt:
