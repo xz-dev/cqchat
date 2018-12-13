@@ -1,7 +1,7 @@
 import multiprocessing as mp
 
 #  from . import mojo
-from . import main_ui
+from . import contact_ui as main_ui
 from .post.PostServer import PostServer
 from .data import data_handle, data
 

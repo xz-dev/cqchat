@@ -1,26 +1,29 @@
 import urwid
 
 
-class NTreeWidget(urwid.TreeWidget):
+class ContactTreeWidget(urwid.TreeWidget):
     """ Display widget for leaf nodes """
 
+    def selectable(self):
+        return True
+
     def get_display_text(self):
-        print(self.get_node().get_value())
-        return self.get_node().get_value()['name']
+        children_text = self.get_node().get_value()['name']
+        return urwid.SelectableIcon(children_text)
 
 
 class NTreeNode(urwid.TreeNode):
     """ Data storage object for leaf nodes """
 
     def load_widget(self):
-        return NTreeWidget(self)
+        return ContactTreeWidget(self)
 
 
 class NParentNode(urwid.ParentNode):
     """ Data storage object for interior/parent nodes """
 
     def load_widget(self):
-        return NTreeWidget(self)
+        return ContactTreeWidget(self)
 
     def load_child_keys(self):
         data = self.get_value()
