@@ -1,6 +1,7 @@
-# [Mojo-Webqq-Python](https://github.com/XZ-Dev/Mojo-Webqq-Python)  
-Mojo-WebQQ的CLI界面  
-[基于Mojo-Webqq](https://github.com/sjdy521/Mojo-Webqq)、[urwid](http://urwid.org)、[requests](https://github.com/requests/requests)  
+# [clichat](https://github.com/xz-dev/clichat)  
+Mojo-Weixin的CLI界面  
+### 因WebQQ于2018-1-1关闭，项目暂时切换到Weixin平台，该项目会加入QQ支持
+基于[Mojo-Weixin](https://github.com/sjdy521/Mojo-Weixin)、[urwid](http://urwid.org)、[requests](https://github.com/requests/requests)  
 ## 使用方法
 暂无
 
