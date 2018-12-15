@@ -93,7 +93,7 @@ def get_contact_info(data):
 
 
 def main(data):
-    from .chat.chat_object import ChatObject
+    from .wechat.chat.chat_object import ChatObject
     ChatObject = ChatObject(data)
     ViewController(ChatObject).main()
 
