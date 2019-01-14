@@ -95,8 +95,23 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         """定时刷新数据
         """
         self.refresh_MessageList_timer = QtCore.QTimer(self)
-        self.refresh_MessageList_timer.timeout.connect(self.__load_MessageList)
-        self.refresh_MessageList_timer.start(100)
+        self.refresh_MessageList_timer.timeout.connect(
+            self.__switch_chat_object)
+        self.refresh_MessageList_timer.start(50)
+
+    def __switch_chat_object(self):
+        # 切换聊天对象
+        self.__load_MessageList()
+        self.__rename_ChatTab()
+
+    def __rename_ChatTab(self):
+        ChatTabWidget = self.ChatTabWidget
+        current_contact = self.current_contact
+        try:
+            ChatTabWidget.setTabText(ChatTabWidget.currentIndex(),
+                                     str(current_contact.chat_object_name))
+        except AttributeError:
+            pass
 
     def __load_MessageList(self):
         """载入消息列表
@@ -137,20 +152,34 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         self.__get_new_current_contact(tree_widget)
 
     def __get_new_current_contact(self, tree_widget):
-        ChatObject = self.ChatObject
         try:
-            current_contact_id = int(str(tree_widget.currentItem()))  # 获取好友ID
-            if tree_widget == self.FriendTree:
-                self.current_contact = ChatObject.ChatIndividual.FriendObject(
-                    current_contact_id)
-            elif tree_widget == self.GroupTree:
-                self.current_contact = ChatObject.ChatIndividual.GroupObject(
-                    current_contact_id)
-            self.MessageList.clear()
+            selected_contact_id = int(str(tree_widget.currentItem()))
         except ValueError:
-            pass
+            return False
         else:
-            self.InputBox.setFocus()  # 文本框获得焦点
+            try:
+                current_contact_id = self.current_contact.chat_object_id
+            except AttributeError:
+                pass
+            else:
+                if current_contact_id == selected_contact_id:
+                    return False
+            finally:
+                current_contact_id = selected_contact_id
+                ChatIndividual = self.ChatObject.ChatIndividual
+                chat_object_info_dict = {
+                    'name': tree_widget.currentItem().text(0),
+                    'id': current_contact_id
+                }
+                if tree_widget is self.FriendTree:
+                    self.current_contact = ChatIndividual.FriendObject(
+                        chat_object_info_dict)
+                elif tree_widget is self.GroupTree:
+                    self.current_contact = ChatIndividual.GroupObject(
+                        chat_object_info_dict)
+                self.MessageList.clear()
+                self.InputBox.setFocus()  # 文本框获得焦点
+        return True
 
     def __send_message(self):
         send_text = self.InputBox.toPlainText()[1:]

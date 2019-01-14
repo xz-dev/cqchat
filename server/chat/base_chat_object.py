@@ -15,7 +15,10 @@ class BaseChatObject():
 
 
 class BaseContactObject(BaseChatObject):
-    def __init__(self, data):
+    def __init__(self, data, chat_object_info_dict):
+        self.chat_object_name = chat_object_info_dict['name']
+        self.chat_object_id = chat_object_info_dict['id']
+        self.chat_object_type = chat_object_info_dict['type']
         super().__init__()
         self.__data = data
         self.message = Message(self.chat_object_id, self.chat_object_type)

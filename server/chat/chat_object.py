@@ -31,11 +31,11 @@ class ChatIndividual():
     def __init__(self, data):
         self.__data = data
 
-    def FriendObject(self, chat_object_id):
-        return FriendObject(self.__data, chat_object_id)
+    def FriendObject(self, chat_object_info_dict):
+        return FriendObject(self.__data, chat_object_info_dict)
 
-    def GroupObject(self, chat_object_id):
-        return GroupObject(self.__data, chat_object_id)
+    def GroupObject(self, chat_object_info_dict):
+        return GroupObject(self.__data, chat_object_info_dict)
 
 
 class FriendListObject(BaseChatListObject):
@@ -76,17 +76,15 @@ class FriendObject(BaseContactObject):
     """好友对象
     """
 
-    def __init__(self, data, chat_object_id):
-        self.chat_object_id = chat_object_id
-        self.chat_object_type = 'friend'
-        super().__init__(data)
+    def __init__(self, data, chat_object_info_dict):
+        chat_object_info_dict['type'] = 'friend'
+        super().__init__(data, chat_object_info_dict)
 
 
 class GroupObject(BaseContactObject):
     """群组对象
     """
 
-    def __init__(self, data, chat_object_id):
-        self.chat_object_id = chat_object_id
-        self.chat_object_type = 'group'
-        super().__init__(data)
+    def __init__(self, data, chat_object_info_dict):
+        chat_object_info_dict['type'] = 'group'
+        super().__init__(data, chat_object_info_dict)
