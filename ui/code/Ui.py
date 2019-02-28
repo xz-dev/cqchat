@@ -72,24 +72,24 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
 
     def __init_FriendTree(self):
         friend_list_object = self.ChatObject.ChatList.FriendListObject()
-        friend_group_list = friend_list_object.info.info()  # 好友信息
-        if friend_group_list:
+        friend_info_list = friend_list_object.info.info()  # 好友信息
+        if friend_info_list:
             self.FriendTree.clear()  # 清空联系人列表
-            for friend_group in friend_group_list['data']:
+            for friend_info in friend_info_list['data']:
                 tree_widget = self.FriendTree
-                for contack_info_dict in friend_group['friends']:
+                for contact_info_dict in friend_info['friends']:
                     self.load_contact_tree(tree_widget,
-                                           friend_group['friend_group_name'],
-                                           contack_info_dict)
+                                           friend_info['friend_group_name'],
+                                           contact_info_dict)
 
     def __init_GroupTree(self):
         group_list_object = self.ChatObject.ChatList.GroupListObject()
         group_list = group_list_object.info.info()  # 群组信息
         if group_list:
             self.GroupTree.clear()  # 清空群组列表
-            for group in group_list['data']:
+            for group_info in group_list['data']:
                 tree_widget = self.GroupTree
-                self.load_contact_tree(tree_widget, None, group)
+                self.load_contact_tree(tree_widget, None, group_info)
 
     def __auto_refresh_ui(self):
         """定时刷新数据
@@ -191,16 +191,16 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         if current_contact:
             current_contact.message.send_message(send_text)
 
-    def load_contact_tree(self, tree_widget, category, contack_info_dict):
-        contack_info_dict = rename_keys(contack_info_dict)
+    def load_contact_tree(self, tree_widget, category, contact_info_dict):
+        contact_info_dict = rename_keys(contact_info_dict)
         from .widgets import ChatTreeWidgetItem
         category = str(category)
         try:
-            contact_markname = contack_info_dict['remark']
+            contact_markname = contact_info_dict['remark']
         except KeyError:
             contact_markname = None
         if not contact_markname:
-            contact_markname = contack_info_dict['name']
+            contact_markname = contact_info_dict['name']
         root = tree_widget.invisibleRootItem()
         root_count = root.childCount()
         root_category_text_list = [
@@ -208,7 +208,7 @@ class MainPage(QtWidgets.QMainWindow, MainGui.Ui_MainWindow):
         ]
         contact_item = ChatTreeWidgetItem({
             'name': contact_markname,
-            'id': contack_info_dict['id']
+            'id': contact_info_dict['id']
         })
         contact_item.setFlags(QtCore.Qt.ItemIsSelectable
                               | QtCore.Qt.ItemIsUserCheckable
@@ -249,7 +249,3 @@ def rename_keys(in_dict):
         out_dict['id'] = in_dict['group_id']
         out_dict['name'] = in_dict['group_name']
     return out_dict
-
-
-if __name__ == '__main__':
-    main(None)

@@ -37,12 +37,12 @@ class _S(BaseHTTPRequestHandler):
 
 class PostServer():
 
-    def __init__(self):
+    def __init__(self, post_data):
         self.port = 8000
-
-    def run(self, post_data):
         global _post_data_dict
         _post_data_dict = post_data
+
+    def run(self):
         server_class = HTTPServer
         handler_class = _S
         server_address = ('', self.port)

@@ -117,21 +117,29 @@ class TrayMessage(BaseList):
         super().__init__(manager)
 
 
-class RunStatus(BaseDict):
-    """程序运行状态字典
-    """
-
-    def __init__(self, manager):
-        super().__init__(manager)
-
-
 class UiData(BaseDict):
     """UI数据字典
     """
 
     def __init__(self, manager):
         super().__init__(manager)
-        self.tmp_dict = BaseDict(manager)
+        self.__init_chat_object()
+
+    def __init_chat_object(self):
+        #  self.chat_object = {
+        #      'FriendListObject': FriendListObject (class),
+        #      'GroupListObject': GroupListObject (class),
+        #      'Friend': {'id': FriendObject (class),
+        #                 ...}
+        #      'Group': {'id': GroupObject (class),
+        #                ...}
+        #  }
+        self.chat_object = {
+            'FriendListObject': None,
+            'GroupListObject': None,
+            'Friend': dict(),
+            'Group': dict(),
+        }
 
 
 class Data():
@@ -142,5 +150,4 @@ class Data():
         manager = multiprocessing.Manager()  # 初始化manager
         self.chat_record = ChatRecord(manager)  # 聊天记录类
         self.post_data = PostData(manager)  # post信息类
-        self.ui_data = UiData(manager)  # Ui数据 TODO: 暂作为空类, 待UI完成后完善
-        self.status = RunStatus(manager)  # 运行状态
+        self.ui_data = UiData(manager)  # Ui数据
